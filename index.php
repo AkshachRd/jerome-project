@@ -7,8 +7,8 @@ $bot_username = 'Jerome Project Bot';
 try {
     $telegram = new Longman\TelegramBot\Telegram($bot_api_key, $bot_username);
     $server_response = $telegram->handle();
+    var_dump($server_response);
     $entityBody = $telegram->getCustomInput();
-    echo $entityBody;
 
 
 
