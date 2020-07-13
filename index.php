@@ -2,7 +2,7 @@
 require __DIR__ . '/vendor/autoload.php';
 
 $bot_api_key = '861121918:AAE1caaPhjPytqAhgEWdXaG9azEQIyVmcJs';
-$bot_username = 'Jerome Project Bot';
+$bot_username = 'JeromeProjectBot';
 
 try {
     $telegram = new Longman\TelegramBot\Telegram($bot_api_key, $bot_username);
