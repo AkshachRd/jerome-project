@@ -8,6 +8,7 @@ $result = $telegram -> getWebhookUpdates(); //Передаем в перемен
 $text = $result["message"]["text"]; //Текст сообщения
 $chat_id = $result["message"]["chat"]["id"]; //Уникальный идентификатор пользователя
 $name = $result["message"]["from"]["username"]; //Юзернейм пользователя
+echo $name;
 $keyboard = [["Последние статьи"],["Картинка"],["Гифка"]]; //Клавиатура
 
 if (isset($text))
