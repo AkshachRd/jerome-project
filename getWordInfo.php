@@ -37,7 +37,9 @@ function getWordInfo(string $word): ?array
         //Если слово существует, то получить данные
         if (!empty($entries))
         {
-            return getPronunciations($entries);
+            $pronunciations = getPronunciations($entries);
+            echo $pronunciations["transcriptionUK"];
+            return $pronunciations;
         }
     }
 }
