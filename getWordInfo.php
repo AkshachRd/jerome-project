@@ -28,10 +28,10 @@
     if ($err) {
         echo "cURL Error #:" . $err;
     } else {
-        echo $response;
+        $response = json_decode($response, true);
     }
 
-    $entries = $response["entries"];
+    $entries = $response["entries"][0];
     //Если слово существует, то получить данные
     if (!empty($entries))
     {
@@ -45,13 +45,28 @@ function getPronunciations(array $entries)
 
     foreach ($pronunciations as $pronunciation)
     {
-        if ($pronunciation["context"]["regions"])
+        if ($pronunciation["context"]["regions"][0] === "United Kingdom")
+        {
+            $transcriptionUK = $pronunciation["transcriptions"]["transcription"];
+            if (isset($pronunciation["audio"]))
+            {
+                $audioUK = file_get_contents($pronunciation["audio"]["url"]);
+            }
+        }
+        elseif ($pronunciation["context"]["regions"][0] === "United States")
+        {
+            $transcriptionUS = $pronunciation["transcriptions"]["transcription"];
+            if (isset($pronunciation["audio"]))
+            {
+                $audioUS = file_get_contents($pronunciation["audio"]["url"]);
+            }
+        }
     }
 }*/
 $curl = curl_init();
 
 curl_setopt_array($curl, array(
-    CURLOPT_URL => "https://lingua-robot.p.rapidapi.com/language/v1/entries/en/dog",
+    CURLOPT_URL => "https://lingua-robot.p.rapidapi.com/language/v1/entries/en/lazy",
     CURLOPT_RETURNTRANSFER => true,
     CURLOPT_FOLLOWLOCATION => true,
     CURLOPT_ENCODING => "",
