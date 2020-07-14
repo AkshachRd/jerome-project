@@ -1,7 +1,7 @@
 <?php
 //Lingua Robot
 
-/*function getWordInfo($word)
+/*function getWordInfo(string $word)
 {
     $curl = curl_init();
 
@@ -31,17 +31,27 @@
         echo $response;
     }
 
-    getPronunciations();
+    $entries = $response["entries"];
+    //Если слово существует, то получить данные
+    if (!empty($entries))
+    {
+        getPronunciations($entries);
+    }
 }
 
-function getPronunciations()
+function getPronunciations(array $entries)
 {
+    $pronunciations = $entries["pronunciations"];
 
+    foreach ($pronunciations as $pronunciation)
+    {
+        if ($pronunciation["context"]["regions"])
+    }
 }*/
 $curl = curl_init();
 
 curl_setopt_array($curl, array(
-    CURLOPT_URL => "https://lingua-robot.p.rapidapi.com/language/v1/entries/en/testx",
+    CURLOPT_URL => "https://lingua-robot.p.rapidapi.com/language/v1/entries/en/male",
     CURLOPT_RETURNTRANSFER => true,
     CURLOPT_FOLLOWLOCATION => true,
     CURLOPT_ENCODING => "",
@@ -63,13 +73,6 @@ curl_close($curl);
 if ($err) {
     echo "cURL Error #:" . $err;
 } else {
-    if (empty($response['entries']))
-    {
-        echo 'NULL';
-    }
-    else
-    {
-        echo $response;
-    }
+    echo $response;
 }
 ?>
