@@ -63,6 +63,13 @@ curl_close($curl);
 if ($err) {
     echo "cURL Error #:" . $err;
 } else {
-    echo $response;
+    if ($response['entries'] === null)
+    {
+        echo 'NULL';
+    }
+    else
+    {
+        echo $response;
+    }
 }
 ?>
