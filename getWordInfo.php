@@ -1,6 +1,8 @@
 <?php
 //Lingua Robot
 
+var_dump(getWordInfo(father));
+
 function getWordInfo(string $word): ?array
 {
     $curl = curl_init();

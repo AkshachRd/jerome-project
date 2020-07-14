@@ -35,14 +35,33 @@ if (isset($text))
         $telegram->sendMessage([ 'chat_id' => $chat_id, 'parse_mode' => 'HTML', 'disable_web_page_preview' => true, 'text' => $reply ]);*/
     }else{
         $pronunciations = getWordInfo($text);
-        $transcriptionUK = $pronunciations["transcriptionUK"];
-        $transcriptionUS = $pronunciations["transcriptionUS"];
+        if (!empty($pronunciations["transcriptionUK"]))
+        {
+            $transcriptionUK = $pronunciations["transcriptionUK"];
+        }
+        else
+        {
+            $transcriptionUK = "";
+        }
+        if (!empty($pronunciations["transcriptionUS"]))
+        {
+            $transcriptionUS = $pronunciations["transcriptionUS"];
+        }
+        else
+        {
+            $transcriptionUS = "";
+        }
+        
         $reply = "$text UK:$transcriptionUK US:$transcriptionUS";
         $telegram->sendMessage([ 'chat_id' => $chat_id, 'text' => $reply ]);
-        $audioUK = $pronunciations["audioUK"];
-        $audioUS = $pronunciations["audioUS"];
-        $telegram->sendAudio([ 'chat_id' => $chat_id, 'audio' => $audioUK, 'caption' => "UK" ]);
-        $telegram->sendAudio([ 'chat_id' => $chat_id, 'audio' => $audioUS, 'caption' => "US" ]);
+        if (!empty($pronunciations["audioUK"]))
+        {
+            $telegram->sendAudio([ 'chat_id' => $chat_id, 'audio' => $pronunciations["audioUK"], 'caption' => "UK" ]);
+        }
+        if (!empty($pronunciations["audioUS"]))
+        {
+            $telegram->sendAudio([ 'chat_id' => $chat_id, 'audio' => $pronunciations["audioUS"], 'caption' => "US" ]);
+        }
     }
 }else{
     $telegram->sendMessage([ 'chat_id' => $chat_id, 'text' => "Отправьте текстовое сообщение." ]);
