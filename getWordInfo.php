@@ -27,7 +27,7 @@ function getWordInfo(string $word): ?array
 
     if ($curlError)
     {
-        echo "cURL Error #:" . $err;
+        echo "cURL Error #:" . $curlError;
     }
     else
     {
