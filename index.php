@@ -1,5 +1,5 @@
 <?php
-include('vendor/autoload.php'); //Подключаем библиотеку
+include ('vendor/autoload.php'); //Подключаем библиотеку
 use Telegram\Bot\Api;
 
 require_once 'getWordInfo.php';
@@ -14,7 +14,8 @@ $keyboard = [["Последние статьи"],["Картинка"],["Гифк
 
 if (isset($text))
 {
-    if ($text == "/start") {
+    if ($text == "/start")
+    {
         $reply = "Добро пожаловать в бота!";
         $reply_markup = $telegram->replyKeyboardMarkup([ 'keyboard' => $keyboard, 'resize_keyboard' => true, 'one_time_keyboard' => false ]);
         $telegram->sendMessage([ 'chat_id' => $chat_id, 'text' => $reply, 'reply_markup' => $reply_markup ]);
@@ -33,8 +34,11 @@ if (isset($text))
             $reply .= "\xE2\x9E\xA1 ".$item->title." (<a href='".$item->link."'>читать</a>)\n";
         }
         $telegram->sendMessage([ 'chat_id' => $chat_id, 'parse_mode' => 'HTML', 'disable_web_page_preview' => true, 'text' => $reply ]);*/
-    }else{
+    }
+    else
+    {
         $text = strtolower($text);
+        //TODO Сделать программное ограничение на количество запростов в сутки всех пользователей
         $pronunciations = getWordInfo($text);
 
         if (!empty($pronunciations["transcriptionUK"]))
@@ -55,19 +59,21 @@ if (isset($text))
         }
 
         $text[0] = strtoupper($text[0]);
-        $reply = "$text $transcriptionUK $transcriptionUS";
-        $telegram->sendMessage([ 'chat_id' => $chat_id, 'text' => $reply ]);
+        $reply = "<b>$text</b>\n $transcriptionUK   $transcriptionUS";
+        $telegram->sendMessage([ 'chat_id' => $chat_id, 'text' => $reply, 'parse_mode' => "HTML" ]);
         //TODO Сдеалть преобразование mp3 в ogg, и передавать их как sendVoice
         if (!empty($pronunciations["audioUK"]))
         {
-            $telegram->sendAudio([ 'chat_id' => $chat_id, 'audio' => $pronunciations["audioUK"], 'title' => "\xF0\x9F\x87\xAC\xF0\x9F\x87\xA7" ]);
+            $telegram->sendAudio([ 'chat_id' => $chat_id, 'audio' => $pronunciations["audioUK"], 'title' => "British accent" ]);
         }
         if (!empty($pronunciations["audioUS"]))
         {
-            $telegram->sendAudio([ 'chat_id' => $chat_id, 'audio' => $pronunciations["audioUS"], 'title' => "\xF0\x9F\x87\xBA\xF0\x9F\x87\xB8" ]);
+            $telegram->sendAudio([ 'chat_id' => $chat_id, 'audio' => $pronunciations["audioUS"], 'title' => "American accent" ]);
         }
     }
-}else{
+}
+else
+{
     $telegram->sendMessage([ 'chat_id' => $chat_id, 'text' => "Отправьте текстовое сообщение." ]);
 }
 ?>
