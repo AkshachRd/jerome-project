@@ -1,8 +1,6 @@
 <?php
 //Lingua Robot
 
-var_dump(getWordInfo(father));
-
 function getWordInfo(string $word): ?array
 {
     $curl = curl_init();
@@ -40,7 +38,6 @@ function getWordInfo(string $word): ?array
         if (!empty($entries))
         {
             $pronunciations = getPronunciations($entries);
-            echo $pronunciations["transcriptionUK"];
             return $pronunciations;
         }
     }
@@ -56,6 +53,7 @@ function getPronunciations(array $entries): ?array
         if ($pronunciation["context"]["regions"][0] === "United Kingdom")
         {
             $transcriptionUK = $pronunciation["transcriptions"]["transcription"];
+            var_dump($transcriptionUK);
             if (isset($pronunciation["audio"]))
             {
                 $audioUK = $pronunciation["audio"]["url"];
