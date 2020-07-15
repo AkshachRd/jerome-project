@@ -33,11 +33,11 @@ function getWordInfo(string $word): ?array
     {
         $response = json_decode($response, true);
 
-        $entries = $response["entries"][0];
+        $entries = $response["entries"];
         //Если слово существует, то получить данные
         if (!empty($entries))
         {
-            $pronunciations = getPronunciations($entries);
+            $pronunciations = getPronunciations($entries[0]);
             $pronunciations["wordIsCorrect"] = true;
             return $pronunciations;
         }
