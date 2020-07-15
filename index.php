@@ -37,7 +37,7 @@ if (isset($text))
         $pronunciations = getWordInfo($text);
         if (!empty($pronunciations["transcriptionUK"]))
         {
-            $transcriptionUK = $pronunciations["transcriptionUK"];
+            $transcriptionUK = "\xF0\x9F\x87\xAC\xF0\x9F\x87\xA7:" . $pronunciations["transcriptionUK"];
         }
         else
         {
@@ -45,21 +45,21 @@ if (isset($text))
         }
         if (!empty($pronunciations["transcriptionUS"]))
         {
-            $transcriptionUS = $pronunciations["transcriptionUS"];
+            $transcriptionUS = "\xF0\x9F\x87\xBA\xF0\x9F\x87\xB8:" . $pronunciations["transcriptionUS"];
         }
         else
         {
             $transcriptionUS = "";
         }
-        $reply = "$text \xF0\x9F\x87\xAC\xF0\x9F\x87\xA7:$transcriptionUK \xF0\x9F\x87\xBA\xF0\x9F\x87\xB8:$transcriptionUS";
+        $reply = "$text $transcriptionUK $transcriptionUS";
         $telegram->sendMessage([ 'chat_id' => $chat_id, 'text' => $reply ]);
         if (!empty($pronunciations["audioUK"]))
         {
-            $telegram->sendAudio([ 'chat_id' => $chat_id, 'audio' => $pronunciations["audioUK"], 'caption' => "UK" ]);
+            $telegram->sendAudio([ 'chat_id' => $chat_id, 'audio' => $pronunciations["audioUK"], 'title' => "\xF0\x9F\x87\xAC\xF0\x9F\x87\xA7" ]);
         }
         if (!empty($pronunciations["audioUS"]))
         {
-            $telegram->sendAudio([ 'chat_id' => $chat_id, 'audio' => $pronunciations["audioUS"], 'caption' => "US" ]);
+            $telegram->sendAudio([ 'chat_id' => $chat_id, 'audio' => $pronunciations["audioUS"], 'title' => "\xF0\x9F\x87\xBA\xF0\x9F\x87\xB8" ]);
         }
     }
 }else{
