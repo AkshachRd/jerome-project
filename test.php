@@ -43,6 +43,7 @@ function getWordInfo(string $word): ?array
     }
 }
 
+
 //Функция получает транкрипции и аудио английского и американского произношений слова
 function getPronunciations(array $entries): ?array
 {
