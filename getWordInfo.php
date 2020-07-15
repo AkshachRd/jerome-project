@@ -52,8 +52,7 @@ function getPronunciations(array $entries): ?array
     {
         if ($pronunciation["context"]["regions"][0] === "United Kingdom")
         {
-            $transcriptionUK = $pronunciation["transcriptions"]["transcription"];
-            var_dump($transcriptionUK);
+            $transcriptionUK = $pronunciation["transcriptions"][0]["transcription"];
             if (isset($pronunciation["audio"]))
             {
                 $audioUK = $pronunciation["audio"]["url"];
@@ -61,7 +60,7 @@ function getPronunciations(array $entries): ?array
         }
         elseif ($pronunciation["context"]["regions"][0] === "United States")
         {
-            $transcriptionUS = $pronunciation["transcriptions"]["transcription"];
+            $transcriptionUS = $pronunciation["transcriptions"][0]["transcription"];
             if (isset($pronunciation["audio"]))
             {
                 $audioUS = $pronunciation["audio"]["url"];
