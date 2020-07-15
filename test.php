@@ -43,10 +43,6 @@ function getWordInfo(string $word): ?array
     }
 }
 
-<<<<<<< HEAD
-
-=======
->>>>>>> b34344138e94509902d6ebee40fd9892d9ca2aee
 //Функция получает транкрипции и аудио английского и американского произношений слова
 function getPronunciations(array $entries): ?array
 {
@@ -57,11 +53,7 @@ function getPronunciations(array $entries): ?array
         if ($pronunciation["context"]["regions"][0] === "United Kingdom")
         {
             $transcriptionUK = $pronunciation["transcriptions"]["transcription"];
-<<<<<<< HEAD
             var_dump($pronunciation["transcriptions"]);
-=======
-            var_dump($transcriptionUK);
->>>>>>> b34344138e94509902d6ebee40fd9892d9ca2aee
             if (isset($pronunciation["audio"]))
             {
                 $audioUK = $pronunciation["audio"]["url"];
