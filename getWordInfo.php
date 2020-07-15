@@ -38,7 +38,14 @@ function getWordInfo(string $word): ?array
         if (!empty($entries))
         {
             $pronunciations = getPronunciations($entries);
+            $pronunciations["wordIsCorrect"] = true;
             return $pronunciations;
+        }
+        else
+        {
+            return $pronunciations = array(
+                "wordIsCorrect" => false
+            );
         }
     }
 }

@@ -40,35 +40,41 @@ if (isset($text))
         $text = strtolower($text);
         //TODO Сделать программное ограничение на количество запростов в сутки всех пользователей
         $pronunciations = getWordInfo($text);
-
-        if (!empty($pronunciations["transcriptionUK"]))
+        if ($pronunciations["wordIsCorrect"])
         {
-            $transcriptionUK = "\xF0\x9F\x87\xAC\xF0\x9F\x87\xA7:" . $pronunciations["transcriptionUK"];
+            if (!empty($pronunciations["transcriptionUK"]))
+            {
+                $transcriptionUK = "\xF0\x9F\x87\xAC\xF0\x9F\x87\xA7:" . $pronunciations["transcriptionUK"];
+            }
+            else
+            {
+                $transcriptionUK = "";
+            }
+            if (!empty($pronunciations["transcriptionUS"]))
+            {
+                $transcriptionUS = "\xF0\x9F\x87\xBA\xF0\x9F\x87\xB8:" . $pronunciations["transcriptionUS"];
+            }
+            else
+            {
+                $transcriptionUS = "";
+            }
+
+            $text[0] = strtoupper($text[0]);
+            $reply = "<b>$text</b>\n$transcriptionUK   $transcriptionUS";
+            $telegram->sendMessage([ 'chat_id' => $chat_id, 'text' => $reply, 'parse_mode' => "HTML" ]);
+            //TODO Сдеалть преобразование mp3 в ogg, и передавать их как sendVoice
+            if (!empty($pronunciations["audioUK"]))
+            {
+                $telegram->sendAudio([ 'chat_id' => $chat_id, 'audio' => $pronunciations["audioUK"], 'title' => "British accent" ]);
+            }
+            if (!empty($pronunciations["audioUS"]))
+            {
+                $telegram->sendAudio([ 'chat_id' => $chat_id, 'audio' => $pronunciations["audioUS"], 'title' => "American accent" ]);
+            }
         }
         else
         {
-            $transcriptionUK = "";
-        }
-        if (!empty($pronunciations["transcriptionUS"]))
-        {
-            $transcriptionUS = "\xF0\x9F\x87\xBA\xF0\x9F\x87\xB8:" . $pronunciations["transcriptionUS"];
-        }
-        else
-        {
-            $transcriptionUS = "";
-        }
-
-        $text[0] = strtoupper($text[0]);
-        $reply = "<b>$text</b>\n $transcriptionUK   $transcriptionUS";
-        $telegram->sendMessage([ 'chat_id' => $chat_id, 'text' => $reply, 'parse_mode' => "HTML" ]);
-        //TODO Сдеалть преобразование mp3 в ogg, и передавать их как sendVoice
-        if (!empty($pronunciations["audioUK"]))
-        {
-            $telegram->sendAudio([ 'chat_id' => $chat_id, 'audio' => $pronunciations["audioUK"], 'title' => "British accent" ]);
-        }
-        if (!empty($pronunciations["audioUS"]))
-        {
-            $telegram->sendAudio([ 'chat_id' => $chat_id, 'audio' => $pronunciations["audioUS"], 'title' => "American accent" ]);
+            $reply = "Слово введено с ошибкой! Перепиши. \(★ω★)/";
         }
     }
 }
