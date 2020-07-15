@@ -36,6 +36,7 @@ if (isset($text))
     }else{
         $text = strtolower($text);
         $pronunciations = getWordInfo($text);
+
         if (!empty($pronunciations["transcriptionUK"]))
         {
             $transcriptionUK = "\xF0\x9F\x87\xAC\xF0\x9F\x87\xA7:" . $pronunciations["transcriptionUK"];
@@ -52,8 +53,11 @@ if (isset($text))
         {
             $transcriptionUS = "";
         }
+
+        $text[0] = strtoupper($text[0]);
         $reply = "$text $transcriptionUK $transcriptionUS";
         $telegram->sendMessage([ 'chat_id' => $chat_id, 'text' => $reply ]);
+        //TODO Сдеалть преобразование mp3 в ogg, и передавать их как sendVoice
         if (!empty($pronunciations["audioUK"]))
         {
             $telegram->sendAudio([ 'chat_id' => $chat_id, 'audio' => $pronunciations["audioUK"], 'title' => "\xF0\x9F\x87\xAC\xF0\x9F\x87\xA7" ]);
