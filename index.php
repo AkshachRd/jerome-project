@@ -51,7 +51,7 @@ if (isset($text))
         {
             $transcriptionUS = "";
         }
-        $reply = "$text UK:$transcriptionUK US:$transcriptionUS";
+        $reply = "$text \xF0\x9F\x87\xAC\xF0\x9F\x87\xA7:$transcriptionUK \xF0\x9F\x87\xBA\xF0\x9F\x87\xB8:$transcriptionUS";
         $telegram->sendMessage([ 'chat_id' => $chat_id, 'text' => $reply ]);
         if (!empty($pronunciations["audioUK"]))
         {
