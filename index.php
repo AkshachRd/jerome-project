@@ -75,6 +75,7 @@ if (isset($text))
         else
         {
             $reply = "Слово введено с ошибкой! Перепиши. \(★ω★)/";
+            $telegram->sendMessage([ 'chat_id' => $chat_id, 'text' => $reply ]);
         }
     }
 }
