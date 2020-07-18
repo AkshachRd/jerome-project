@@ -22,9 +22,11 @@ if (isset($text))
     {
         $text = strtolower($text);
         //TODO Сделать программное ограничение на количество запростов в сутки всех пользователей
-        $pronunciations = getWordInfo($text);
-        if ($pronunciations["wordIsCorrect"])
+        $wordInfo = getWordInfo($text);
+        if ($wordInfo["wordIsCorrect"])
         {
+            $pronunciations = $wordInfo["pronunciations"];
+
             if (!empty($pronunciations["transcriptionUK"]))
             {
                 $transcriptionUK = "\xF0\x9F\x87\xAC\xF0\x9F\x87\xA7:" . $pronunciations["transcriptionUK"];
@@ -48,6 +50,7 @@ if (isset($text))
             $keyboard = [ 'inline_keyboard' => $inlineKeyboard];
             $reply_markup = json_encode($keyboard);
             $telegram->sendMessage([ 'chat_id' => $chat_id, 'text' => $reply, 'parse_mode' => "HTML", 'reply_markup' => $reply_markup ]);
+
             //TODO Сдеалть преобразование mp3 в ogg, и передавать их как sendVoice
             if (!empty($pronunciations["audioUK"]))
             {
@@ -58,7 +61,10 @@ if (isset($text))
                 $telegram->sendAudio([ 'chat_id' => $chat_id, 'audio' => $pronunciations["audioUS"], 'title' => "American accent" ]);
             }
 
+            $definitionsByPartOfSpeech = $wordInfo["definitionsByPartOfSpeech"];
 
+            $reply = "Определение\n" . $definitionsByPartOfSpeech["noun"][0]["definition"];
+            $telegram->sendMessage([ 'chat_id' => $chat_id, 'text' => $reply ]);
         }
         else
         {

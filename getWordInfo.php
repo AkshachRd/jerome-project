@@ -38,12 +38,17 @@ function getWordInfo(string $word): ?array
         if (!empty($entries))
         {
             $pronunciations = getPronunciations($entries);
-            $pronunciations["wordIsCorrect"] = true;
-            return $pronunciations;
+            $definitionsByPartOfSpeech = getDefinitionsByPartOfSpeech($entries);
+
+            return array(
+                "wordIsCorrect" => true,
+                "pronunciations" => $pronunciations,
+                "definitionsByPartOfSpeech" => $definitionsByPartOfSpeech
+            );
         }
         else
         {
-            return $pronunciations = array(
+            return array(
                 "wordIsCorrect" => false
             );
         }
@@ -83,5 +88,44 @@ function getPronunciations(array $entries): ?array
         "audioUK" => $audioUK,
         "audioUS" => $audioUS
     );
+}
+
+function getDefinitionsByPartOfSpeech(array $entries): ?array
+{
+    $lexemes = $entries["lexemes"];
+    $definitionsByPartOfSpeech = [];
+
+    foreach ($lexemes as $lexeme)
+    {
+        $partOfSpeech = $lexeme["partOfSpeech"];
+        $definitions = getDefinitions($lexeme);
+
+        $definitionsByPartOfSpeech["$partOfSpeech"] = $definitions;
+    }
+
+    return $definitionsByPartOfSpeech;
+}
+
+function getDefinitions(array $lexeme): ?array
+{
+    $senses = $lexeme["senses"];
+    $definitions = [];
+    $index = 0;
+
+    foreach ($senses as $sense)
+    {
+        if ($index !== 3)
+        {
+            $definitions[$index] = array(
+                "definition" => $sense["definition"]
+            );
+            if (!empty($sense["usageExamples"]))
+            {
+                $definitions[$index]["usageExample"] = $sense["usageExamples"][0];
+            }
+        }
+    }
+
+    return $definitions;
 }
 ?>
