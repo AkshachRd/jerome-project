@@ -24,6 +24,8 @@ if (!empty($callbackQuery))
 
         $definitionsByPartOfSpeech = $tempWordInfo["definitionsByPartOfSpeech"];
         $tempWordInfo = null;
+        
+        var_dump($definitionsByPartOfSpeech);
 
         foreach ($definitionsByPartOfSpeech as $key => $value)
         {
@@ -38,7 +40,7 @@ if (!empty($callbackQuery))
 
         $reply = "What part of speech is your word?";
 
-        $telegram->sendMessage([ 'chat_id' => $chat_id, 'text' => $reply_markup, 'reply_markup' => $reply_markup ]);
+        $telegram->sendMessage([ 'chat_id' => $chat_id, 'text' => $reply, 'reply_markup' => $reply_markup ]);
     }
 }
 else
