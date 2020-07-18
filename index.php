@@ -23,6 +23,7 @@ if (!empty($callbackQuery))
 
         //Получаю определения из сессии
         $definitionsByPartOfSpeech = $_SESSION["definitionsByPartOfSpeech"];
+        var_dump($definitionsByPartOfSpeech);
         $_SESSION = array();
         session_write_close();
 
