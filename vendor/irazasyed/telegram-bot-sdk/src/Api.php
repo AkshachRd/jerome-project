@@ -778,26 +778,6 @@ class Api
     }
 
     /**
-     * Builds a inline keyboard markup.
-     *
-     * <code>
-     * $params = [
-     *   'inline_keyboard'          => '',
-     * ];
-     * </code>
-     *
-     * @param array $params
-     *
-     * @var array   $params ['inline_keyboard']
-     *
-     * @return string
-     */
-    public function inlineKeyboardMarkup(array $params)
-    {
-        return json_encode($params);
-    }
-
-    /**
      * Hide the current custom keyboard and display the default letter-keyboard.
      *
      * <code>
