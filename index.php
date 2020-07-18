@@ -12,6 +12,8 @@ $chat_id = $result["message"]["chat"]["id"]; //Уникальный иденти
 $name = $result["message"]["from"]["username"]; //Юзернейм пользователя
 $callbackQuery = $result["callback_query"];
 
+$filename = 'somefile.txt';
+
 if (!empty($callbackQuery))
 {
     $callbackQueryData = $callbackQuery["data"];
@@ -21,11 +23,10 @@ if (!empty($callbackQuery))
     {
         $inlineKeyboard = [[]];
 
-        //Получаю определения из сессии
-        $definitionsByPartOfSpeech = $_SESSION["definitionsByPartOfSpeech"];
+        //Получаю определения из файла
+        $fileText = file_get_contents($filename);
+        $definitionsByPartOfSpeech = unserialize($fileText);
         $reply = $definitionsByPartOfSpeech["noun"][0]["definition"];
-        $_SESSION = array();
-        session_write_close();
 
         foreach ($definitionsByPartOfSpeech as $key => $value)
         {
@@ -99,10 +100,9 @@ else
 
                 //Здесь 2 кнопки: 'Определение' и 'Список'
 
-                //Сохраняю определения слова в сессию
-                session_start();
-                $_SESSION = array();
-                $_SESSION["definitionsByPartOfSpeech"] = $wordInfo["definitionsByPartOfSpeech"];
+                //Сохраняю определения слова в файл
+                $fileText = serialize($wordInfo["definitionsByPartOfSpeech"]);
+                file_put_contents($filename, $fileText);
             }
             else
             {
