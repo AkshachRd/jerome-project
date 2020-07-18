@@ -3,7 +3,6 @@ include ('vendor/autoload.php'); //Подключаем библиотеку
 use Telegram\Bot\Api;
 
 require_once 'getWordInfo.php';
-require_once 'config.php';
 
 $telegram = new Api('861121918:AAE1caaPhjPytqAhgEWdXaG9azEQIyVmcJs'); //Устанавливаем токен, полученный у BotFather
 $result = $telegram -> getWebhookUpdates(); //Передаем в переменную $result полную информацию о сообщении пользователя
@@ -22,10 +21,10 @@ if (!empty($callbackQuery))
     {
         $inlineKeyboard = [[]];
 
-        $definitionsByPartOfSpeech = $tempWordInfo["definitionsByPartOfSpeech"];
-        $tempWordInfo = null;
-
-        $reply = var_dump($definitionsByPartOfSpeech);
+        //Получаю определения из сессии
+        $definitionsByPartOfSpeech = $_SESSION["definitionsByPartOfSpeech"];
+        $_SESSION = array();
+        session_write_close();
 
         foreach ($definitionsByPartOfSpeech as $key => $value)
         {
@@ -40,7 +39,7 @@ if (!empty($callbackQuery))
 
         //$reply = "What part of speech is your word?";
 
-        $telegram->sendMessage([ 'chat_id' => $chat_id, 'text' => $reply, 'reply_markup' => $reply_markup ]);
+        $telegram->sendMessage([ 'chat_id' => $chat_id, 'text' => $reply_markup, 'reply_markup' => $reply_markup ]);
     }
 }
 else
@@ -98,7 +97,11 @@ else
                 }
 
                 //Здесь 2 кнопки: 'Определение' и 'Список'
-                $tempWordInfo = $wordInfo;
+
+                //Сохраняю определения слова в сессию
+                session_start();
+                $_SESSION = array();
+                $_SESSION["definitionsByPartOfSpeech"] = $wordInfo["definitionsByPartOfSpeech"];
             }
             else
             {
