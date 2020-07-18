@@ -85,7 +85,7 @@ else
                 $keyboard = [ 'inline_keyboard' => $inlineKeyboard ];
                 $reply_markup = json_encode($keyboard);
 
-                $telegram->sendMessage([ 'chat_id' => $chat_id, 'text' => $reply, 'parse_mode' => "HTML", 'reply_markup' => $reply_markup ]);
+                $telegram->sendMessage([ 'chat_id' => $chat_id, 'text' => $reply . $wordInfo["definitionsByPartOfSpeech"]["noun"][0]["definition"], 'parse_mode' => "HTML", 'reply_markup' => $reply_markup ]);
 
                 //TODO Сдеалть преобразование mp3 в ogg, и передавать их как sendVoice
                 if (!empty($pronunciations["audioUK"]))
