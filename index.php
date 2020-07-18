@@ -52,8 +52,13 @@ if (!empty($callbackQuery))
         {
             $definition = $sense["definition"];
             $usageExample = $sense["usageExample"];
+            $index++;
 
-            $reply .= "<b>$index.</b> $definition\nUsage example:<i>$usageExample</i>\n";
+            $reply .= "<b>$index.</b> $definition\n";
+            if (!empty($usageExample))
+            {
+                $reply .= "Usage example: <i>$usageExample</i>\n";
+            }
         }
 
         $reply .= "If you want to add a definition with a word to the list, then choose the one that you like the most.";
