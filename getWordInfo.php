@@ -3,6 +3,9 @@
 
 function getWordInfo(string $word): ?array
 {
+    //Заменяю пробел на %2520, чтобы запрос фраз проходил корректно
+    $word = str_replace(" ", "%2520", $word);
+
     $curl = curl_init();
 
     curl_setopt_array($curl, array(
