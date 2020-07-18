@@ -67,6 +67,8 @@ if (isset($text))
             $result = $telegram -> getWebhookUpdates();
 
             $callbackQueryData = $result["callback_query"]["data"];
+            $reply = $callbackQueryData;
+            $telegram->sendMessage([ 'chat_id' => $chat_id, 'text' => $reply ]);
             if ($callbackQueryData === 'definition')
             {
                 $inlineKeyboard = [[]];
@@ -107,10 +109,3 @@ function workingWithInlineKeyboardButtons($telegram)
     $callbackQueryData = $result["callback_query"]["data"];
 }
 ?>
-
-
-
-
-
-
-ффыввыфвыф
