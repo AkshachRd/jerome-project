@@ -119,6 +119,7 @@ function getDefinitions(array $lexeme): ?array
             $definitions[$index] = array(
                 "definition" => $sense["definition"]
             );
+            echo $sense["definition"];
             if (!empty($sense["usageExamples"]))
             {
                 $definitions[$index]["usageExample"] = $sense["usageExamples"][0];
