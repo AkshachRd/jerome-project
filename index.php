@@ -6,6 +6,7 @@ require_once 'getWordInfo.php';
 
 $telegram = new Api('861121918:AAE1caaPhjPytqAhgEWdXaG9azEQIyVmcJs'); //Устанавливаем токен, полученный у BotFather
 $result = $telegram -> getWebhookUpdates(); //Передаем в переменную $result полную информацию о сообщении пользователя
+echo $result;
 
 $text = $result["message"]["text"]; //Текст сообщения
 $chat_id = $result["message"]["chat"]["id"]; //Уникальный идентификатор пользователя
@@ -60,11 +61,6 @@ if (isset($text))
             {
                 $telegram->sendAudio([ 'chat_id' => $chat_id, 'audio' => $pronunciations["audioUS"], 'title' => "American accent" ]);
             }
-
-            $definitionsByPartOfSpeech = $wordInfo["definitionsByPartOfSpeech"];
-
-            $reply = "Определение\n" . $definitionsByPartOfSpeech["noun"][0]["definition"];
-            $telegram->sendMessage([ 'chat_id' => $chat_id, 'text' => $reply ]);
         }
         else
         {
@@ -76,6 +72,11 @@ if (isset($text))
 else
 {
     $telegram->sendMessage([ 'chat_id' => $chat_id, 'text' => "Отправьте текстовое сообщение." ]);
+}
+
+function workingWithInlineKeyboardButtons($telegram)
+{
+    $result = $telegram -> getWebhookUpdates();
 }
 ?>
 
