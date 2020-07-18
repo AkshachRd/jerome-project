@@ -23,7 +23,7 @@ if (!empty($callbackQuery))
 
         //Получаю определения из сессии
         $definitionsByPartOfSpeech = $_SESSION["definitionsByPartOfSpeech"];
-        var_dump($definitionsByPartOfSpeech);
+        $reply = $definitionsByPartOfSpeech["noun"][0]["definition"];
         $_SESSION = array();
         session_write_close();
 
@@ -40,7 +40,7 @@ if (!empty($callbackQuery))
 
         //$reply = "What part of speech is your word?";
 
-        $telegram->sendMessage([ 'chat_id' => $chat_id, 'text' => $reply_markup, 'reply_markup' => $reply_markup ]);
+        $telegram->sendMessage([ 'chat_id' => $chat_id, 'text' => $reply, 'reply_markup' => $reply_markup ]);
     }
 }
 else
