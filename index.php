@@ -12,36 +12,57 @@ $chat_id = $result["message"]["chat"]["id"]; //Уникальный иденти
 $name = $result["message"]["from"]["username"]; //Юзернейм пользователя
 $callbackQuery = $result["callback_query"];
 
-$filename = 'somefile.txt';
+//Временно работаю с файлом, потом переделаю по работу с БД
+$definitionsFileName = 'definitions.txt';
 
 if (!empty($callbackQuery))
 {
     $callbackQueryData = $callbackQuery["data"];
     $chat_id = $callbackQuery["message"]["chat"]["id"];
+    $inlineKeyboard = [[]];
 
     if ($callbackQueryData === 'definition')
     {
-        $inlineKeyboard = [[]];
-
         //Получаю определения из файла
-        $fileText = file_get_contents($filename);
+        $fileText = file_get_contents($definitionsFileName);
         $definitionsByPartOfSpeech = unserialize($fileText);
-        $reply = $definitionsByPartOfSpeech["noun"][0]["definition"];
 
-        foreach ($definitionsByPartOfSpeech as $key => $value)
+        foreach ($definitionsByPartOfSpeech as $partOfSpeech => $lexemes)
         {
-            $keyText = $key;
-            $keyText[0] = strtoupper($keyText[0]);
+            $partOfSpeechText = $partOfSpeech;
+            $partOfSpeechText[0] = strtoupper($partOfSpeechText[0]);
 
-            array_push($inlineKeyboard[0], [ 'text' => $keyText, 'callback_data' => $key ]);
+            array_push($inlineKeyboard[0], [ 'text' => $partOfSpeechText, 'callback_data' => $partOfSpeech ]);
         }
 
         $keyboard = [ 'inline_keyboard' => $inlineKeyboard ];
         $reply_markup = json_encode($keyboard);
 
-        //$reply = "What part of speech is your word?";
+        $reply = "What part of speech is your word?";
 
         $telegram->sendMessage([ 'chat_id' => $chat_id, 'text' => $reply, 'reply_markup' => $reply_markup ]);
+    }
+    elseif ($callbackQueryData === 'noun' || $callbackQueryData === 'verb' || $callbackQueryData === 'adjective' || $callbackQueryData === 'adverb')
+    {
+        //Получаю определения из файла
+        $fileText = file_get_contents($definitionsFileName);
+        $definitionsByPartOfSpeech = unserialize($fileText);
+
+        foreach ($definitionsByPartOfSpeech[$callbackQueryData] as $index => $sense)
+        {
+            $definition = $sense["definition"];
+            $usageExample = $sense["usageExample"];
+
+            $reply .= "<b>$index.</b> $definition\nUsage example:<i>$usageExample</i>\n";
+        }
+
+        $reply .= "If you want to add a definition with a word to the list, then choose the one that you like the most.";
+
+        $inlineKeyboard = [[[ 'text' => "1", 'callback_data' => "first" ], [ 'text' => "2", 'callback_data' => "second" ], [ 'text' => "3", 'callback_data' => "third" ]]];
+        $keyboard = [ 'inline_keyboard' => $inlineKeyboard ];
+        $reply_markup = json_encode($keyboard);
+
+        $telegram->sendMessage([ 'chat_id' => $chat_id, 'text' => $reply, 'parse_mode' => "HTML", 'reply_markup' => $reply_markup ]);
     }
 }
 else
@@ -82,11 +103,12 @@ else
                 $text[0] = strtoupper($text[0]);
                 $reply = "<b>$text</b>\n$transcriptionUK   $transcriptionUS";
 
-                $inlineKeyboard = [[[ 'text' => "Definition", 'callback_data' => "definition" ],[ 'text' => "List", 'callback_data' => "list" ]]];
+                //Здесь 2 кнопки: 'Определение' и 'Список'
+                $inlineKeyboard = [[[ 'text' => "Definition", 'callback_data' => "definition" ], [ 'text' => "Add to the list", 'callback_data' => "list" ]]];
                 $keyboard = [ 'inline_keyboard' => $inlineKeyboard ];
                 $reply_markup = json_encode($keyboard);
 
-                $telegram->sendMessage([ 'chat_id' => $chat_id, 'text' => $reply . $wordInfo["definitionsByPartOfSpeech"]["noun"][0]["definition"], 'parse_mode' => "HTML", 'reply_markup' => $reply_markup ]);
+                $telegram->sendMessage([ 'chat_id' => $chat_id, 'text' => $reply, 'parse_mode' => "HTML", 'reply_markup' => $reply_markup ]);
 
                 //TODO Сдеалть преобразование mp3 в ogg, и передавать их как sendVoice
                 if (!empty($pronunciations["audioUK"]))
@@ -98,11 +120,9 @@ else
                     $telegram->sendAudio([ 'chat_id' => $chat_id, 'audio' => $pronunciations["audioUS"], 'title' => "American accent" ]);
                 }
 
-                //Здесь 2 кнопки: 'Определение' и 'Список'
-
                 //Сохраняю определения слова в файл
                 $fileText = serialize($wordInfo["definitionsByPartOfSpeech"]);
-                file_put_contents($filename, $fileText);
+                file_put_contents($definitionsFileName, $fileText);
             }
             else
             {
