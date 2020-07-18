@@ -2,7 +2,7 @@
 $curl = curl_init();
 
 curl_setopt_array($curl, array(
-    CURLOPT_URL => "https://lingua-robot.p.rapidapi.com/language/v1/entries/en/actively",
+    CURLOPT_URL => "https://lingua-robot.p.rapidapi.com/language/v1/entries/en/meet_up",
     CURLOPT_RETURNTRANSFER => true,
     CURLOPT_FOLLOWLOCATION => true,
     CURLOPT_ENCODING => "",

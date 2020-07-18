@@ -21,7 +21,7 @@ if (!empty($callbackQuery))
     $chat_id = $callbackQuery["message"]["chat"]["id"];
     $inlineKeyboard = [[]];
 
-    if ($callbackQueryData === 'definition')
+    if ($callbackQueryData === 'definitions')
     {
         //Получаю определения из файла
         $fileText = file_get_contents($definitionsFileName);
@@ -109,7 +109,7 @@ else
                 $reply = "<b>$text</b>\n$transcriptionUK   $transcriptionUS";
 
                 //Здесь 2 кнопки: 'Определение' и 'Список'
-                $inlineKeyboard = [[[ 'text' => "Definition", 'callback_data' => "definition" ], [ 'text' => "Add to the list", 'callback_data' => "list" ]]];
+                $inlineKeyboard = [[[ 'text' => "Definitions", 'callback_data' => "definitions" ], [ 'text' => "Add to the list", 'callback_data' => "list" ]]];
                 $keyboard = [ 'inline_keyboard' => $inlineKeyboard ];
                 $reply_markup = json_encode($keyboard);
 
