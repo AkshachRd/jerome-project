@@ -123,6 +123,8 @@ function getDefinitions(array $lexeme): ?array
             {
                 $definitions[$index]["usageExample"] = $sense["usageExamples"][0];
             }
+
+            $index++;
         }
     }
 

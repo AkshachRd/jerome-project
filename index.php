@@ -6,7 +6,6 @@ require_once 'getWordInfo.php';
 
 $telegram = new Api('861121918:AAE1caaPhjPytqAhgEWdXaG9azEQIyVmcJs'); //Устанавливаем токен, полученный у BotFather
 $result = $telegram -> getWebhookUpdates(); //Передаем в переменную $result полную информацию о сообщении пользователя
-var_dump($result);
 
 $text = $result["message"]["text"]; //Текст сообщения
 $chat_id = $result["message"]["chat"]["id"]; //Уникальный идентификатор пользователя
@@ -47,9 +46,11 @@ if (isset($text))
 
             $text[0] = strtoupper($text[0]);
             $reply = "<b>$text</b>\n$transcriptionUK   $transcriptionUS";
+
             $inlineKeyboard = [[[ 'text' => "Definition", 'callback_data' => "definition" ],[ 'text' => "List", 'callback_data' => "list" ]]];
-            $keyboard = [ 'inline_keyboard' => $inlineKeyboard];
+            $keyboard = [ 'inline_keyboard' => $inlineKeyboard ];
             $reply_markup = json_encode($keyboard);
+
             $telegram->sendMessage([ 'chat_id' => $chat_id, 'text' => $reply, 'parse_mode' => "HTML", 'reply_markup' => $reply_markup ]);
 
             //TODO Сдеалть преобразование mp3 в ogg, и передавать их как sendVoice
@@ -60,6 +61,31 @@ if (isset($text))
             if (!empty($pronunciations["audioUS"]))
             {
                 $telegram->sendAudio([ 'chat_id' => $chat_id, 'audio' => $pronunciations["audioUS"], 'title' => "American accent" ]);
+            }
+
+            //Здесь 2 кнопки: 'Определение' и 'Список'
+            $result = $telegram -> getWebhookUpdates();
+
+            $callbackQueryData = $result["callback_query"]["data"];
+            if ($callbackQueryData === 'definition')
+            {
+                $inlineKeyboard = [[]];
+
+                $definitionsByPartOfSpeech = $wordInfo["definitionsByPartOfSpeech"];
+                foreach ($definitionsByPartOfSpeech as $key => $value)
+                {
+                    $keyText = $key;
+                    $keyText[0] = strtoupper($keyText[0]);
+
+                    array_push($inlineKeyboard[0], [ 'text' => $keyText, 'callback_data' => $key ]);
+                }
+
+                $keyboard = [ 'inline_keyboard' => $inlineKeyboard ];
+                $reply_markup = json_encode($keyboard);
+
+                $reply = "What part of speech is your word?";
+
+                $telegram->sendMessage([ 'chat_id' => $chat_id, 'text' => $reply, 'reply_markup' => $reply_markup ]);
             }
         }
         else
@@ -77,6 +103,8 @@ else
 function workingWithInlineKeyboardButtons($telegram)
 {
     $result = $telegram -> getWebhookUpdates();
+
+    $callbackQueryData = $result["callback_query"]["data"];
 }
 ?>
 
@@ -85,4 +113,4 @@ function workingWithInlineKeyboardButtons($telegram)
 
 
 
-
+ффыввыфвыф
