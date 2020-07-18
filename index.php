@@ -42,7 +42,7 @@ if (!empty($callbackQuery))
 
         $telegram->sendMessage([ 'chat_id' => $chat_id, 'text' => $reply, 'reply_markup' => $reply_markup ]);
     }
-    elseif ($callbackQueryData === 'noun' || $callbackQueryData === 'verb' || $callbackQueryData === 'adjective' || $callbackQueryData === 'adverb')
+    elseif ($callbackQueryData === 'noun' || $callbackQueryData === 'verb' || $callbackQueryData === 'adjective' || $callbackQueryData === 'adverb' || $callbackQueryData === 'interjection')
     {
         //Получаю определения из файла
         $fileText = file_get_contents($definitionsFileName);
@@ -61,7 +61,7 @@ if (!empty($callbackQuery))
             }
         }
 
-        $reply .= "If you want to add a definition with a word to the list, then choose the one that you like the most.";
+        $reply .= "\nIf you want to add a definition with a word to the list, then choose the one that you like the most.";
 
         $inlineKeyboard = [[[ 'text' => "1", 'callback_data' => "first" ], [ 'text' => "2", 'callback_data' => "second" ], [ 'text' => "3", 'callback_data' => "third" ]]];
         $keyboard = [ 'inline_keyboard' => $inlineKeyboard ];
