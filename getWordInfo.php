@@ -6,7 +6,21 @@ function getWordInfo(string $word): ?array
     //Заменяю пробел на %2520, чтобы запрос фраз проходил корректно
     $word = str_replace(' ', '%20', $word);
 
-    $curl = curl_init();
+    $ch = curl_init();
+
+    curl_setopt($ch, CURLOPT_URL, "https://private-anon-5ac36e7a1c-linguarobot.apiary-mock.com/language/v1/entries/en/example");
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
+    curl_setopt($ch, CURLOPT_HEADER, FALSE);
+
+    curl_setopt($ch, CURLOPT_HTTPHEADER, array(
+        "X-RapidAPI-Key: YOUR_API_KEY",
+        "Accept: application/json"
+    ));
+
+    $response = curl_exec($ch);
+    curl_close($ch);
+
+    /*$curl = curl_init();
 
     curl_setopt_array($curl, array(
         CURLOPT_URL => "https://lingua-robot.p.rapidapi.com/language/v1/entries/en/$word",
@@ -55,8 +69,31 @@ function getWordInfo(string $word): ?array
                 "wordIsCorrect" => false
             );
         }
+    }*/
+
+    $response = json_decode($response, true);
+
+    $entries = $response["entries"][0];
+    //Если слово существует, то получить данные
+    if (!empty($entries))
+    {
+        $pronunciations = getPronunciations($entries);
+        $definitionsByPartOfSpeech = getDefinitionsByPartOfSpeech($entries);
+
+        return array(
+            "wordIsCorrect" => true,
+            "pronunciations" => $pronunciations,
+            "definitionsByPartOfSpeech" => $definitionsByPartOfSpeech
+        );
+    }
+    else
+    {
+        return array(
+            "wordIsCorrect" => false
+        );
     }
 }
+
 
 //Функция получает транкрипции и аудио английского и американского произношений слова
 function getPronunciations(array $entries): ?array
