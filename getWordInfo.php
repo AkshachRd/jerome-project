@@ -8,7 +8,7 @@ function getWordInfo(string $word): ?array
 
     $ch = curl_init();
 
-    curl_setopt($ch, CURLOPT_URL, "https://private-anon-5ac36e7a1c-linguarobot.apiary-mock.com/language/v1/entries/en/example");
+    curl_setopt($ch, CURLOPT_URL, "https://private-anon-5ac36e7a1c-linguarobot.apiary-mock.com/language/v1/entries/en/$word");
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
     curl_setopt($ch, CURLOPT_HEADER, FALSE);
 
