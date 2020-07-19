@@ -13,7 +13,7 @@ function getWordInfo(string $word): ?array
     curl_setopt($ch, CURLOPT_HEADER, FALSE);
 
     curl_setopt($ch, CURLOPT_HTTPHEADER, array(
-        "X-RapidAPI-Key: YOUR_API_KEY",
+        "X-RapidAPI-Key: 99d6039723mshcaa6930780810d7p173043jsna4ae1d23e3de",
         "Accept: application/json"
     ));
 
