@@ -4,6 +4,7 @@
         "ext-json": "*",
         "ext-simplexml": "*",
         "ext-dom": "*",
-        "ext-curl": "*"
+        "ext-curl": "*",
+        "dejurin/php-google-translate-for-free": "^1.0"
     }
 }

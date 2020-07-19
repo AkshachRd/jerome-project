@@ -87,6 +87,8 @@ else
             if ($wordInfo["wordIsCorrect"])
             {
                 $pronunciations = $wordInfo["pronunciations"];
+                $definitionsByPartOfSpeech = $wordInfo["definitionsByPartOfSpeech"];
+                $translation = $wordInfo["translation"];
 
                 if (!empty($pronunciations["transcriptionUK"]))
                 {
@@ -106,7 +108,22 @@ else
                 }
 
                 $text[0] = strtoupper($text[0]);
-                $reply = "<b>$text</b>\n$transcriptionUK   $transcriptionUS";
+                if ($transcriptionUK === "" && $transcriptionUS === "")
+                {
+                    $reply = "<b>$text</b>\n<b>$translation</b>";
+                }
+                elseif ($transcriptionUK === "")
+                {
+                    $reply = "<b>$text</b>\n$transcriptionUS\n<b>$translation</b>";
+                }
+                elseif ($transcriptionUS === "")
+                {
+                    $reply = "<b>$text</b>\n$transcriptionUK\n<b>$translation</b>";
+                }
+                else
+                {
+                    $reply = "<b>$text</b>\n$transcriptionUK   $transcriptionUS\n<b>$translation</b>";
+                }
 
                 //Здесь 2 кнопки: 'Определение' и 'Список'
                 $inlineKeyboard = [[[ 'text' => "Definitions", 'callback_data' => "definitions" ], [ 'text' => "Add to the list", 'callback_data' => "list" ]]];
@@ -126,7 +143,7 @@ else
                 }
 
                 //Сохраняю определения слова в файл
-                $fileText = serialize($wordInfo["definitionsByPartOfSpeech"]);
+                $fileText = serialize($definitionsByPartOfSpeech);
                 file_put_contents($definitionsFileName, $fileText);
             }
             else

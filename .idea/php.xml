@@ -48,6 +48,7 @@
       <path value="$PROJECT_DIR$/vendor/longman/telegram-bot" />
       <path value="$PROJECT_DIR$/vendor/symfony/polyfill-php72" />
       <path value="$PROJECT_DIR$/vendor/paragonie/random_compat" />
+      <path value="$PROJECT_DIR$/vendor/dejurin/php-google-translate-for-free" />
     </include_path>
   </component>
   <component name="PhpProjectSharedConfiguration" php_language_level="7.2" />

@@ -48,6 +48,7 @@ class ComposerStaticInitce25682f713f11a1ab8b5776c27ce280
         array (
             'Doctrine\\Inflector\\' => 19,
             'Doctrine\\Common\\Inflector\\' => 26,
+            'Dejurin\\' => 8,
         ),
     );
 
@@ -99,6 +100,10 @@ class ComposerStaticInitce25682f713f11a1ab8b5776c27ce280
         'Doctrine\\Common\\Inflector\\' => 
         array (
             0 => __DIR__ . '/..' . '/doctrine/inflector/lib/Doctrine/Common/Inflector',
+        ),
+        'Dejurin\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/dejurin/php-google-translate-for-free/src',
         ),
     );
 

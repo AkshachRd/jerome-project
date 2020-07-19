@@ -1,11 +1,14 @@
 <?php
-//Lingua Robot
+require_once ('vendor/autoload.php');
+use \Dejurin\GoogleTranslateForFree;
 
+//Функция возвращает массив с информацией о слове
 function getWordInfo(string $word): ?array
 {
     //Заменяю пробел на %20, чтобы запрос фраз проходил корректно
     $word = str_replace(' ', '%20', $word);
 
+    //Lingua Robot API
     $curl = curl_init();
 
     curl_setopt_array($curl, array(
@@ -42,11 +45,13 @@ function getWordInfo(string $word): ?array
         {
             $pronunciations = getPronunciations($entries);
             $definitionsByPartOfSpeech = getDefinitionsByPartOfSpeech($entries);
+            $translation = getTranslation($entries["entry"]);
 
             return array(
                 "wordIsCorrect" => true,
                 "pronunciations" => $pronunciations,
-                "definitionsByPartOfSpeech" => $definitionsByPartOfSpeech
+                "definitionsByPartOfSpeech" => $definitionsByPartOfSpeech,
+                "translation" => $translation
             );
         }
         else
@@ -58,6 +63,18 @@ function getWordInfo(string $word): ?array
     }
 }
 
+//Функция возвращает перевод слова
+function getTranslation(string $word): ?string
+{
+    $source = 'en';
+    $target = 'ru';
+    $attempts = 5;
+
+    $tr = new GoogleTranslateForFree();
+    $result = $tr->translate($source, $target, $word, $attempts);
+
+    return $result;
+}
 
 //Функция получает транкрипции и аудио английского и американского произношений слова
 function getPronunciations(array $entries): ?array
@@ -94,6 +111,7 @@ function getPronunciations(array $entries): ?array
     );
 }
 
+//Функция получает массив с ключами в виде частей речи. С каждым ключем максимум 3 определения с примерами использавания
 function getDefinitionsByPartOfSpeech(array $entries): ?array
 {
     $lexemes = $entries["lexemes"];
@@ -110,6 +128,7 @@ function getDefinitionsByPartOfSpeech(array $entries): ?array
     return $definitionsByPartOfSpeech;
 }
 
+//Функция возвращает массив с 3 определениями с примерами использования
 function getDefinitions(array $lexeme): ?array
 {
     $senses = $lexeme["senses"];
