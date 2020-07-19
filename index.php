@@ -35,6 +35,7 @@ if (!empty($callbackQuery))
             array_push($inlineKeyboard[0], [ 'text' => $partOfSpeechText, 'callback_data' => $partOfSpeech ]);
         }
 
+        //Здесь возможные кнопки 'существительное', 'глагол', 'прилагательное', 'наречие', 'междометие'
         $keyboard = [ 'inline_keyboard' => $inlineKeyboard ];
         $reply_markup = json_encode($keyboard);
 
@@ -76,7 +77,8 @@ else
     {
         if ($text == "/start")
         {
-            $reply = "Добро пожаловать в бота!";
+            $reply = "Добро пожаловать в бота!\nЭтот бот призван помочь тебе выучить ОнГлИйСкИе слова. Ты можешь создать 
+            свой список слов и повторять их, когда тебе будет удобно. Бот будет присылать тебе оповещения ";
             $telegram->sendMessage([ 'chat_id' => $chat_id, 'text' => $reply ]);
         }
         else

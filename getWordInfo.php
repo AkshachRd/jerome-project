@@ -72,6 +72,7 @@ function getTranslation(string $word): ?string
 
     $tr = new GoogleTranslateForFree();
     $result = $tr->translate($source, $target, $word, $attempts);
+    $result[0] = strtoupper($result[0]);
 
     return $result;
 }
