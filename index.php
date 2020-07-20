@@ -168,7 +168,7 @@ function insertTempWordInfoToDB(object $db, int $chatId, array $tempWordInfo): v
         "temp_word_info" => json_encode($tempWordInfo)
     );
 
-    $db->update('users_data', [ "temp_word_info" => null ]);
+    //$db->update('users_data', [ "temp_word_info" => null ]);
     $db->insert('users_data', $data);
 }
 
@@ -177,4 +177,6 @@ function getTempWordInfoFromDB(object $db, int $chatId): ?array
     $db->where('chat_id', $chatId);
 
     return json_decode($db->getOne('users_data', 'temp_word_info')["temp_word_info"], true);
+
+    $db->disconnect();
 }
