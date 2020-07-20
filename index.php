@@ -26,10 +26,6 @@ if (!empty($callbackQuery))
 
     if ($callbackQueryData === 'definitions')
     {
-        //Получаю определения из файла
-        /*$fileText = file_get_contents($definitionsFileName);
-        $definitionsByPartOfSpeech = unserialize($fileText);*/
-
         //Получаю из БД временный массив
         $definitionsByPartOfSpeech = getTempWordInfoFromDB($db, $chatId)["definitionsByPartOfSpeech"];
 
@@ -51,10 +47,6 @@ if (!empty($callbackQuery))
     }
     elseif ($callbackQueryData === 'noun' || $callbackQueryData === 'verb' || $callbackQueryData === 'adjective' || $callbackQueryData === 'adverb' || $callbackQueryData === 'interjection')
     {
-        //Получаю определения из файла
-        /*$fileText = file_get_contents($definitionsFileName);
-        $definitionsByPartOfSpeech = unserialize($fileText);*/
-
         //Получаю из БД временный массив
         $definitionsByPartOfSpeech = getTempWordInfoFromDB($db, $chatId)["definitionsByPartOfSpeech"];
 
@@ -69,11 +61,11 @@ if (!empty($callbackQuery))
             {
                 $reply .= "Usage example: <i>$usageExample</i>\n";
             }
+            $inlineKeyboard[0][--$index] = [ 'text' => "$index", 'callback_data' => "$index" ];
         }
 
         $reply .= "\nIf you want to add a definition with a word to the list, then choose the one that you like the most.";
-
-        $inlineKeyboard = [[[ 'text' => "1", 'callback_data' => "first" ], [ 'text' => "2", 'callback_data' => "second" ], [ 'text' => "3", 'callback_data' => "third" ]]];
+        
         $keyboard = [ 'inline_keyboard' => $inlineKeyboard ];
         $reply_markup = json_encode($keyboard);
 
@@ -150,10 +142,6 @@ elseif (!empty($text))
             {
                 $telegram->sendAudio([ 'chat_id' => $chatId, 'audio' => $pronunciations["audioUS"], 'title' => "American accent" ]);
             }
-
-            //Сохраняю определения слова в файл
-            /*$fileText = serialize($definitionsByPartOfSpeech);
-            file_put_contents($definitionsFileName, $fileText);*/
 
             //Вставляю в БД временный массив
             insertTempWordInfoToDB($db, $chatId, $wordInfo);
