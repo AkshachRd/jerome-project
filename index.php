@@ -169,7 +169,7 @@ function insertTempWordInfoToDB(object $db, int $chatId, array $tempWordInfo): v
     );
 
     //$db->update('users_data', [ "temp_word_info" => null ]);
-    $db->insert('users_data', $data);
+    $db->replace('users_data', $data);
 }
 
 function getTempWordInfoFromDB(object $db, int $chatId): ?array
