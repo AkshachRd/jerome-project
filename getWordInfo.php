@@ -1,5 +1,6 @@
 <?php
-require_once ('vendor/autoload.php');
+require_once 'config.php';
+require_once 'vendor/autoload.php';
 use \Dejurin\GoogleTranslateForFree;
 
 //Функция возвращает массив с информацией о слове
@@ -22,7 +23,7 @@ function getWordInfo(string $word): ?array
         CURLOPT_CUSTOMREQUEST => "GET",
         CURLOPT_HTTPHEADER => array(
             "x-rapidapi-host: lingua-robot.p.rapidapi.com",
-            "x-rapidapi-key: 99d6039723mshcaa6930780810d7p173043jsna4ae1d23e3de"
+            "x-rapidapi-key: " . LINGUA_ROBOT_API_KEY
         )
     ));
 

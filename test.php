@@ -1,31 +1,20 @@
 <?php
-$curl = curl_init();
+require_once 'MysqliDb.php';
+require_once 'config.php';
 
-curl_setopt_array($curl, array(
-    CURLOPT_URL => "https://lingua-robot.p.rapidapi.com/language/v1/entries/en/meet%20up",
-    CURLOPT_RETURNTRANSFER => true,
-    CURLOPT_FOLLOWLOCATION => true,
-    CURLOPT_ENCODING => "",
-    CURLOPT_MAXREDIRS => 10,
-    CURLOPT_TIMEOUT => 30,
-    CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
-    CURLOPT_CUSTOMREQUEST => "GET",
-    CURLOPT_HTTPHEADER => array(
-        "x-rapidapi-host: lingua-robot.p.rapidapi.com",
-        "x-rapidapi-key: 99d6039723mshcaa6930780810d7p173043jsna4ae1d23e3de"
-    )
-));
+$db = new MysqliDb (DB_HOST, DB_USERNAME, DB_PASSWORD, DB_NAME); //Подключаюсь к базе данных
 
-$response = curl_exec($curl);
-$curlError = curl_error($curl);
+$chatId = 5;
+$str = '{"wordIsCorrect": false}';
 
-curl_close($curl);
+$data = array(
+    "chat_id" => $chatId,
+    "temp_word_info" => $str
+);
 
-if ($curlError)
+$id = $db->insert('users_data', $data);
+if ($id)
 {
-    echo "cURL Error #:" . $curlError;
+    echo 'Всё ок!';
 }
-else
-{
-    echo $response;
-}
+
