@@ -61,11 +61,12 @@ if (!empty($callbackQuery))
             {
                 $reply .= "Usage example: <i>$usageExample</i>\n";
             }
-            $inlineKeyboard[0][--$index] = [ 'text' => "$index", 'callback_data' => "$index" ];
+            $inlineKeyboard[0][$index - 1] = [ 'text' => "$index", 'callback_data' => "$index" ];
         }
 
         $reply .= "\nIf you want to add a definition with a word to the list, then choose the one that you like the most.";
-        
+
+        //Здесь разлчное количество кнопок: от 1 до 3, в виде '1', '2', '3'
         $keyboard = [ 'inline_keyboard' => $inlineKeyboard ];
         $reply_markup = json_encode($keyboard);
 
@@ -85,6 +86,7 @@ elseif (!empty($text))
         $text = strtolower($text);
         //TODO Сделать программное ограничение на количество запростов в сутки всех пользователей
         $wordInfo = getWordInfo($text);
+
         if ($wordInfo["wordIsCorrect"])
         {
             $pronunciations = $wordInfo["pronunciations"];

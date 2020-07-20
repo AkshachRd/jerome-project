@@ -1,20 +1,18 @@
 <?php
-require_once 'MysqliDb.php';
-require_once 'config.php';
+require_once 'vendor/autoload.php';
+use \Dejurin\GoogleTranslateForFree;
 
-$db = new MysqliDb (DB_HOST, DB_USERNAME, DB_PASSWORD, DB_NAME); //Подключаюсь к базе данных
+echo getTranslation('Father');
 
-$chatId = 5;
-$str = '{"wordIsCorrect": false}';
-
-$data = array(
-    "chat_id" => $chatId,
-    "temp_word_info" => $str
-);
-
-$id = $db->insert('users_data', $data);
-if ($id)
+function getTranslation(string $word): ?string
 {
-    echo 'Всё ок!';
-}
+    $source = 'en';
+    $target = 'ru';
+    $attempts = 5;
 
+    $tr = new GoogleTranslateForFree();
+    $result = $tr->translate($source, $target, $word, $attempts);
+    $result[0] = strtoupper($result[0]);
+
+    return $result;
+}
