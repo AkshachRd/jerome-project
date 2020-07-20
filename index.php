@@ -42,7 +42,7 @@ if (!empty($callbackQuery))
         $keyboard = [ 'inline_keyboard' => $inlineKeyboard ];
         $reply_markup = json_encode($keyboard);
 
-        $reply = "What part of speech is your word?";
+        $reply = "What part of speech is your word?" . $reply_markup;
 
         $telegram->sendMessage([ 'chat_id' => $chatId, 'text' => $reply, 'reply_markup' => $reply_markup ]);
     }
