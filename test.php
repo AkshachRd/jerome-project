@@ -3,7 +3,6 @@ require_once 'MysqliDb.php';
 
 $db = new MysqliDb ('localhost', 'root', 'BJx@3~rQ_N98%tn', 'telegram_bot_db');
 
-$db->where('chat_id', '5')->where('word', 'father');
-$wordNum = $db->getOne('word_list', 'word_num')["word_num"];
+$maxWordNum = $db->rawQueryOne("SELECT MAX(word_num) FROM word_list WHERE chat_id=2")["MAX(word_num)"];
 
-var_dump($wordNum);
+var_dump($maxWordNum);
