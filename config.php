@@ -19,3 +19,7 @@ const PART_OF_SPEECH_VERB = 'verb';
 const PART_OF_SPEECH_ADJECTIVE = 'adjective';
 const PART_OF_SPEECH_ADVERB = 'adverb';
 const PART_OF_SPEECH_INTERJECTION = 'interjection';
+//Which definition to take
+const FIRST_DEFINITION = 1;
+const SECOND_DEFINITION = 2;
+const THIRD_DEFINITION = 3;

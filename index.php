@@ -50,7 +50,11 @@ function getButtonAnswer(object $telegram, mysqli $link, string $tempWordInfoFil
     }
     elseif (in_array($callbackQueryData , [PART_OF_SPEECH_NOUN, PART_OF_SPEECH_VERB, PART_OF_SPEECH_ADJECTIVE, PART_OF_SPEECH_ADVERB, PART_OF_SPEECH_INTERJECTION]))
     {
-        getButtonPartOfSpeechAnswer($telegram, $chatId, $inlineKeyboard, $callbackQueryData, $definitionsByPartOfSpeech);
+        getButtonPartOfSpeechAnswer($telegram, $chatId, $inlineKeyboard, $tempWordInfoFile, $callbackQueryData, $definitionsByPartOfSpeech);
+    }
+    elseif (in_array($callbackQueryData , [FIRST_DEFINITION, SECOND_DEFINITION, THIRD_DEFINITION]))
+    {
+        addDefinitionToList($telegram, $chatId, $link, $callbackQueryData, $tempWordInfo);
     }
     elseif ($callbackQueryData === 'add_to_the_list')
     {
@@ -77,8 +81,9 @@ function getButtonDefinitionsAnswer(object $telegram, int $chatId, array $inline
     $telegram->sendMessage([ 'chat_id' => $chatId, 'text' => $reply, 'reply_markup' => $reply_markup ]);
 }
 
-function getButtonPartOfSpeechAnswer(object $telegram, int $chatId, array $inlineKeyboard, string $callbackQueryData, array $definitionsByPartOfSpeech): void
+function getButtonPartOfSpeechAnswer(object $telegram, int $chatId, array $inlineKeyboard, string $tempWordInfoFile, string $callbackQueryData, array $tempWordInfo): void
 {
+    $definitionsByPartOfSpeech = $tempWordInfo["definitionsByPartOfSpeech"];
     $reply = "";
 
     foreach ($definitionsByPartOfSpeech[$callbackQueryData] as $index => $sense)
@@ -102,6 +107,62 @@ function getButtonPartOfSpeechAnswer(object $telegram, int $chatId, array $inlin
     $reply_markup = json_encode($keyboard);
 
     $telegram->sendMessage([ 'chat_id' => $chatId, 'text' => $reply, 'parse_mode' => "HTML", 'reply_markup' => $reply_markup ]);
+
+    $definitionsByPartOfSpeech = array_intersect($definitionsByPartOfSpeech, [$callbackQueryData => $definitionsByPartOfSpeech[$callbackQueryData]]);
+    $tempWordInfo["definitionsByPartOfSpeech"] = $definitionsByPartOfSpeech;
+
+    //Вставляю в файл временный массив
+    file_put_contents($tempWordInfoFile, "");
+    file_put_contents($tempWordInfoFile, serialize($tempWordInfo));
+}
+
+function addDefinitionToList(object $telegram, int $chatId, mysqli $link, string $callbackQueryData, array $tempWordInfo): void
+{
+    $word = $tempWordInfo["word"];
+    $definitionsByPartOfSpeech = $tempWordInfo["definitionsByPartOfSpeech"];
+
+    $sql = 'SELECT definition FROM word_list WHERE chat_id = ' . $chatId . ' AND word = "' . $word . '"';
+    $sqlResult = mysqli_query($link, $sql);
+
+    $definition = mysqli_fetch_array($sqlResult)["definition"];
+
+    if (empty($definition))
+    {
+        $sql = 'SELECT word_num FROM word_list WHERE chat_id = ' . $chatId . ' AND word = "' . $word . '"';
+        $sqlResult = mysqli_query($link, $sql);
+
+        $wordNum = (int)mysqli_fetch_array($sqlResult)["word_num"];
+
+        if (empty($wordNum))
+        {
+            $sql = 'SELECT MAX(word_num) FROM word_list WHERE chat_id = ' . $chatId;
+            $sqlResult = mysqli_query($link, $sql);
+
+            $maxWordNum = (int)mysqli_fetch_array($sqlResult)["MAX(word_num)"];
+
+            if (!empty($maxWordNum))
+            {
+                //В $wordNum номер последнего слова. Добавляю следующее слово в список
+                addWordToDBList($link, $chatId, $maxWordNum + 1, $tempWordInfo);
+            }
+            else
+            {
+                //Номера последнего слова нет. Добавляю первое слово в списке
+                addWordToDBList($link, $chatId, 1, $tempWordInfo);
+            }
+        }
+
+        $sql = 'UPDATE word_list SET definition = "' . end($definitionsByPartOfSpeech)[$callbackQueryData - 1]["definition"] . '", usage_example = "' . end($definitionsByPartOfSpeech)[$callbackQueryData - 1]["usageExample"] . '" WHERE chat_id = ' . $chatId;
+        mysqli_query($link, $sql);
+
+        $reply = "Определение успешно добавлено!";
+    }
+    else
+    {
+        $reply = "Определение уже добавлено. Расслабься :)";
+    }
+
+    $telegram->sendMessage([ 'chat_id' => $chatId, 'text' => $reply ]);
 }
 
 function textEntered(object $telegram, mysqli $link, string $tempWordInfoFile, int $chatId, string $text): void
@@ -218,11 +279,11 @@ function addWordToList(object $telegram, mysqli $link, int $chatId, array $wordI
             addWordToDBList($link, $chatId, 1, $wordInfo);
         }
 
-        $reply = "Слово успешно добавлено!.";
+        $reply = "Слово успешно добавлено!";
     }
     else
     {
-        $reply = "Слово уже есть в списке. Расслабься :).";
+        $reply = "Слово уже есть в списке. Расслабься :)";
     }
 
     $telegram->sendMessage([ 'chat_id' => $chatId, 'text' => $reply ]);
