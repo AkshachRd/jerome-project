@@ -194,7 +194,7 @@ function addWordToList(object $telegram, object $db, int $chatId, array $wordInf
 
     if (empty($wordNum))
     {
-        $maxWordNum = $db->rawQueryOne("SELECT MAX(word_num) FROM word_list WHERE chat_id=$chatId")["MAX(word_num)"];
+        $maxWordNum = $db->rawQueryOne("SELECT MAX(word_num) FROM word_list WHERE chat_id=$chatId");
         $telegram->sendMessage([ 'chat_id' => $chatId, 'text' => $maxWordNum ]);
 
         if ($maxWordNum != null)
