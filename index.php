@@ -15,13 +15,15 @@ $chatId = $result["message"]["chat"]["id"]; //Уникальный иденти�
 $name = $result["message"]["from"]["username"]; //Юзернейм пользователя
 $callbackQuery = $result["callback_query"]; //Запрос, возвращенный кнопкой
 
+$tempWordInfoFile = 'tempWordInfoFile.txt'; //Временный файл для хранения массива с информацией о слове
+
 if (!empty($callbackQuery))
 {
-    getButtonAnswer($telegram, $link, $callbackQuery);
+    getButtonAnswer($telegram, $link, $tempWordInfoFile, $callbackQuery);
 }
 elseif (!empty($text))
 {
-    textEntered($telegram, $link, $chatId, $text);
+    textEntered($telegram, $link, $tempWordInfoFile, $chatId, $text);
 }
 else
 {
@@ -32,13 +34,15 @@ else
 
 
 
-function getButtonAnswer(object $telegram, mysqli $link, array $callbackQuery): void
+function getButtonAnswer(object $telegram, mysqli $link, string $tempWordInfoFile, array $callbackQuery): void
 {
     $callbackQueryData = $callbackQuery["data"];
     $chatId = $callbackQuery["message"]["chat"]["id"];
-    $tempWordInfo = getTempWordInfoFromDB($link, $chatId);
-    $definitionsByPartOfSpeech = $tempWordInfo["definitionsByPartOfSpeech"]; //Получаю из БД временный массив
     $inlineKeyboard = [[]];
+
+    //Получаю из файла временный массив
+    $tempWordInfo = unserialize(file_get_contents($tempWordInfoFile));
+    $definitionsByPartOfSpeech = $tempWordInfo["definitionsByPartOfSpeech"];
 
     if ($callbackQueryData === 'definitions')
     {
@@ -100,7 +104,7 @@ function getButtonPartOfSpeechAnswer(object $telegram, int $chatId, array $inlin
     $telegram->sendMessage([ 'chat_id' => $chatId, 'text' => $reply, 'parse_mode' => "HTML", 'reply_markup' => $reply_markup ]);
 }
 
-function textEntered(object $telegram, mysqli $link, int $chatId, string $text): void
+function textEntered(object $telegram, mysqli $link, string $tempWordInfoFile, int $chatId, string $text): void
 {
     if ($text == "/start")
     {
@@ -170,10 +174,11 @@ function textEntered(object $telegram, mysqli $link, int $chatId, string $text):
                 $telegram->sendAudio([ 'chat_id' => $chatId, 'audio' => $pronunciations["audioUS"], 'title' => "American accent" ]);
             }
 
-            //Вставляю в БД временный массив
+            //Вставляю в файл временный массив
             unset($wordInfo["wordIsCorrect"]);
             $wordInfo["word"] = $text;
-            insertTempWordInfoToDB($link, $chatId, $wordInfo);
+            file_put_contents($tempWordInfoFile, "");
+            file_put_contents($tempWordInfoFile, serialize($wordInfo));
         }
         else
         {
@@ -233,29 +238,4 @@ function addWordToDBList(mysqli $link, int $chatId, int $wordNum, array $wordInf
     $sql = 'INSERT word_list(chat_id, word_num, word, transcription_uk, transcription_us, audio_uk, audio_us, translation) VALUES (' . $chatId . ', ' . $wordNum . ', "' . $wordInfo["word"] . '", "' . $wordInfo["pronunciations"]["transcriptionUK"] . '", "' . $wordInfo["pronunciations"]["transcriptionUS"] . '", "' . $wordInfo["pronunciations"]["audioUK"] . '", "' . $wordInfo["pronunciations"]["audioUS"] . '", "' . $wordInfo["translation"] . '")';
 
     mysqli_query($link, $sql);
-}
-
-function insertTempWordInfoToDB(mysqli $link, int $chatId, array $tempWordInfo): void
-{
-    $sql = 'SELECT * FROM users_data WHERE chat_id = ' . $chatId;
-    $sqlResult = mysqli_query($link, $sql);
-
-    if (!empty(mysqli_fetch_array($sqlResult)))
-    {
-        $sql = 'UPDATE users_data SET temp_word_info = "' . json_encode($tempWordInfo) . '" WHERE chat_id = ' . $chatId;
-    }
-    else
-    {
-        $sql = 'INSERT users_data(chat_id, temp_word_info) VALUES (' . $chatId . ', ' . json_encode($tempWordInfo) . ')';
-    }
-
-    mysqli_query($link, $sql);
-}
-
-function getTempWordInfoFromDB(mysqli $link, int $chatId): ?array
-{
-    $sql = 'SELECT temp_word_info FROM users_data WHERE chat_id = ' . $chatId;
-    $sqlResult = mysqli_query($link, $sql);
-
-    return json_decode(mysqli_fetch_array($sqlResult)[0], true);
 }
