@@ -50,7 +50,7 @@ function getButtonAnswer(object $telegram, mysqli $link, string $tempWordInfoFil
     }
     elseif (in_array($callbackQueryData , [PART_OF_SPEECH_NOUN, PART_OF_SPEECH_VERB, PART_OF_SPEECH_ADJECTIVE, PART_OF_SPEECH_ADVERB, PART_OF_SPEECH_INTERJECTION]))
     {
-        getButtonPartOfSpeechAnswer($telegram, $chatId, $inlineKeyboard, $tempWordInfoFile, $callbackQueryData, $definitionsByPartOfSpeech);
+        getButtonPartOfSpeechAnswer($telegram, $chatId, $inlineKeyboard, $tempWordInfoFile, $callbackQueryData, $tempWordInfo);
     }
     elseif (in_array($callbackQueryData , [FIRST_DEFINITION, SECOND_DEFINITION, THIRD_DEFINITION]))
     {
