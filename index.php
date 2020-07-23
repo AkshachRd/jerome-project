@@ -5,7 +5,7 @@ require_once 'getWordInfo.php'; //Функции для работы с API
 require_once 'vendor/autoload.php';
 use Telegram\Bot\Api;
 
-$db = new MysqliDb (DB_HOST, DB_USERNAME, DB_PASSWORD, DB_NAME); //Подключаюсь к базе данных
+$link = mysqli_connect(DB_HOST, DB_USERNAME, DB_PASSWORD, DB_NAME); //Подключаюсь к базе данных
 
 $telegram = new Api(TG_BOT_TOKEN); //Устанавливаем токен, полученный у BotFather
 $result = $telegram -> getWebhookUpdates(); //Передаем в переменную $result полную информацию о сообщении пользователя
@@ -17,11 +17,11 @@ $callbackQuery = $result["callback_query"]; //Запрос, возвращенн
 
 if (!empty($callbackQuery))
 {
-    getButtonAnswer($telegram, $db, $callbackQuery);
+    getButtonAnswer($telegram, $link, $callbackQuery);
 }
 elseif (!empty($text))
 {
-    textEntered($telegram, $db, $chatId, $text);
+    textEntered($telegram, $link, $chatId, $text);
 }
 else
 {
@@ -32,11 +32,11 @@ else
 
 
 
-function getButtonAnswer(object $telegram, object $db, array $callbackQuery): void
+function getButtonAnswer(object $telegram, mysqli $link, array $callbackQuery): void
 {
     $callbackQueryData = $callbackQuery["data"];
     $chatId = $callbackQuery["message"]["chat"]["id"];
-    $tempWordInfo = getTempWordInfoFromDB($db, $chatId);
+    $tempWordInfo = getTempWordInfoFromDB($link, $chatId);
     $definitionsByPartOfSpeech = $tempWordInfo["definitionsByPartOfSpeech"]; //Получаю из БД временный массив
     $inlineKeyboard = [[]];
 
@@ -50,7 +50,7 @@ function getButtonAnswer(object $telegram, object $db, array $callbackQuery): vo
     }
     elseif ($callbackQueryData === 'add_to_the_list')
     {
-        addWordToList($telegram, $db, $chatId, $tempWordInfo);
+        addWordToList($telegram, $link, $chatId, $tempWordInfo);
     }
 }
 
@@ -100,7 +100,7 @@ function getButtonPartOfSpeechAnswer(object $telegram, int $chatId, array $inlin
     $telegram->sendMessage([ 'chat_id' => $chatId, 'text' => $reply, 'parse_mode' => "HTML", 'reply_markup' => $reply_markup ]);
 }
 
-function textEntered(object $telegram, object $db, int $chatId, string $text): void
+function textEntered(object $telegram, mysqli $link, int $chatId, string $text): void
 {
     if ($text == "/start")
     {
@@ -173,7 +173,7 @@ function textEntered(object $telegram, object $db, int $chatId, string $text): v
             //Вставляю в БД временный массив
             unset($wordInfo["wordIsCorrect"]);
             $wordInfo["word"] = $text;
-            insertTempWordInfoToDB($db, $chatId, $wordInfo);
+            insertTempWordInfoToDB($link, $chatId, $wordInfo);
         }
         else
         {
@@ -186,30 +186,21 @@ function textEntered(object $telegram, object $db, int $chatId, string $text): v
 
 
 //Функции, работающие с БД
-function addWordToList(object $telegram, object $db, int $chatId, array $wordInfo): void
+function addWordToList(object $telegram, mysqli $link, int $chatId, array $wordInfo): void
 {
     $word = $wordInfo["word"];
-    $db->where('chat_id', $chatId)->where('word', $word);
 
-    if ($db->getLastErrno() === 0)
-        $telegram->sendMessage([ 'chat_id' => $chatId, 'text' => 'Update succesfull' ]);
-    else
-        $telegram->sendMessage([ 'chat_id' => $chatId, 'text' => 'Update failed. Error: '. $db->getLastError() ]);
+    $sql = 'SELECT word_num FROM word_list WHERE chat_id = ' . $chatId . ' AND word = "' . $word . '"';
+    $sqlResult = mysqli_query($link, $sql);
 
-    $wordNum = $db->getOne('word_list', 'word_num')["word_num"];
-
+    $wordNum = (int)mysqli_fetch_array($sqlResult)["word_num"];
 
     if (empty($wordNum))
     {
-        $db->where('chat_id', $chatId);
+        $sql = 'SELECT MAX(word_num) FROM word_list WHERE chat_id = ' . $chatId;
+        $sqlResult = mysqli_query($link, $sql);
 
-        if ($db->getLastErrno() === 0)
-            $telegram->sendMessage([ 'chat_id' => $chatId, 'text' => 'Update succesfull' ]);
-        else
-            $telegram->sendMessage([ 'chat_id' => $chatId, 'text' => 'Update failed. Error: '. $db->getLastError() ]);
-
-        $maxWordNum = end($db->get('word_list', null, 'word_num'))["word_num"];
-        //$maxWordNum = $db->rawQuery('SELECT MAX(word_num) FROM word_list WHERE chat_id=' . "$chatId")["MAX(word_num)"];
+        $maxWordNum = (int)mysqli_fetch_array($sqlResult)["MAX(word_num)"];
 
         if (empty($maxWordNum))
         {
@@ -219,12 +210,12 @@ function addWordToList(object $telegram, object $db, int $chatId, array $wordInf
         if (!empty($maxWordNum))
         {
             //В $wordNum номер последнего слова. Добавляю следующее слово в список
-            addWordToDBList($db, $chatId, $maxWordNum + 1, $wordInfo);
+            addWordToDBList($link, $chatId, $maxWordNum + 1, $wordInfo);
         }
         else
         {
             //Номера последнего слова нет. Добавляю первое слово в списке
-            addWordToDBList($db, $chatId, 1, $wordInfo);
+            addWordToDBList($link, $chatId, 1, $wordInfo);
         }
 
         $reply = "Слово успешно добавлено!.";
@@ -237,38 +228,34 @@ function addWordToList(object $telegram, object $db, int $chatId, array $wordInf
     $telegram->sendMessage([ 'chat_id' => $chatId, 'text' => $reply ]);
 }
 
-function addWordToDBList(object $db, int $chatId, int $WordNum, array $wordInfo): void
+function addWordToDBList(mysqli $link, int $chatId, int $wordNum, array $wordInfo): void
 {
-    $data = array(
-        "chat_id" => $chatId,
-        "word_num" => $WordNum,
-        "word" => $wordInfo["word"],
-        "transcription_uk" => $wordInfo["pronunciations"]["transcriptionUK"],
-        "transcription_us" => $wordInfo["pronunciations"]["transcriptionUS"],
-        "audio_uk" => $wordInfo["pronunciations"]["audioUK"],
-        "audio_us" => $wordInfo["pronunciations"]["audioUS"],
-        "translation" => $wordInfo["translation"],
-        /*"definition" => $definition,
-        "usage_example" => $usageExample*/
-    );
+    $sql = 'INSERT word_list(chat_id, word_num, word, transcription_uk, transcription_us, audio_uk, audio_us, translation) VALUES (' . $chatId . ', ' . $wordNum . ', "' . $wordInfo["word"] . '", "' . $wordInfo["pronunciations"]["transcriptionUK"] . '", "' . $wordInfo["pronunciations"]["transcriptionUS"] . '", "' . $wordInfo["pronunciations"]["audioUK"] . '", "' . $wordInfo["pronunciations"]["audioUS"] . '", "' . $wordInfo["translation"] . '")';
 
-    $db->insert('word_list', $data);
+    mysqli_query($link, $sql);
 }
 
-function insertTempWordInfoToDB(object $db, int $chatId, array $tempWordInfo): void
+function insertTempWordInfoToDB(mysqli $link, int $chatId, array $tempWordInfo): void
 {
-    $data = array(
-        "chat_id" => $chatId,
-        "temp_word_info" => json_encode($tempWordInfo)
-    );
+    $sql = 'SELECT * FROM users_data WHERE chat_id = ' . $chatId;
+    $sqlResult = mysqli_query($link, $sql);
 
-    //$db->update('users_data', [ "temp_word_info" => null ]);
-    $db->replace('users_data', $data);
+    if (!empty(mysqli_fetch_array($sqlResult)))
+    {
+        $sql = 'UPDATE users_data SET temp_word_info = ' . json_encode($tempWordInfo) . ' WHERE chat_id = ' . $chatId;
+    }
+    else
+    {
+        $sql = 'INSERT users_data(chat_id, temp_word_info) VALUES (' . $chatId . ', ' . json_encode($tempWordInfo) . ')';
+    }
+
+    mysqli_query($link, $sql);
 }
 
-function getTempWordInfoFromDB(object $db, int $chatId): ?array
+function getTempWordInfoFromDB(mysqli $link, int $chatId): ?array
 {
-    $db->where('chat_id', $chatId);
+    $sql = 'SELECT temp_word_info FROM users_data WHERE chat_id = ' . $chatId;
+    $sqlResult = mysqli_query($link, $sql);
 
-    return json_decode($db->getOne('users_data', 'temp_word_info')["temp_word_info"], true);
+    return json_decode(mysqli_fetch_array($sqlResult)[0], true);
 }
