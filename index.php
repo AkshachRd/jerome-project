@@ -49,7 +49,6 @@ function getButtonAnswer(object $telegram, object $db, array $callbackQuery): vo
     }
     elseif ($callbackQueryData === 'add_to_the_list')
     {
-        $telegram->sendMessage([ 'chat_id' => $chatId, 'text' => "Попал сюда" ]);
         addWordToList($telegram, $db, $chatId, $callbackQuery);
     }
 }
@@ -194,6 +193,8 @@ function addWordToList(object $telegram, object $db, int $chatId, array $wordInf
     if (empty($wordNum))
     {
         $maxWordNum = $db->rawQueryOne("SELECT MAX(word_num) FROM word_list WHERE chat_id=$chatId")["MAX(word_num)"];
+
+        $telegram->sendMessage([ 'chat_id' => $chatId, 'text' => "Сюда тоже попал" ]);
 
         if ($maxWordNum !== null)
         {
