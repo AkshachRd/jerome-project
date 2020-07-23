@@ -194,11 +194,10 @@ function textEntered(object $telegram, mysqli $link, string $tempWordInfoFile, i
 function addWordToList(object $telegram, mysqli $link, int $chatId, array $wordInfo): void
 {
     $word = $wordInfo["word"];
-    $telegram->sendMessage([ 'chat_id' => $chatId, 'text' => $word ]);
 
     $sql = 'SELECT word_num FROM word_list WHERE chat_id = ' . $chatId . ' AND word = "' . $word . '"';
     $sqlResult = mysqli_query($link, $sql);
-
+    $telegram->sendMessage([ 'chat_id' => $chatId, 'text' => mysqli_error($link) ]);
     $wordNum = (int)mysqli_fetch_array($sqlResult)["word_num"];
 
     if (empty($wordNum))
