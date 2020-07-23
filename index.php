@@ -152,7 +152,7 @@ function addDefinitionToList(object $telegram, int $chatId, mysqli $link, string
             }
         }
 
-        $sql = 'UPDATE word_list SET definition = "' . end($definitionsByPartOfSpeech)[$callbackQueryData - 1]["definition"] . '", usage_example = "' . end($definitionsByPartOfSpeech)[$callbackQueryData - 1]["usageExample"] . '" WHERE WHERE chat_id = ' . $chatId . ' AND word = "' . $word . '"';
+        $sql = 'UPDATE word_list SET definition = "' . end($definitionsByPartOfSpeech)[$callbackQueryData - 1]["definition"] . '", usage_example = "' . end($definitionsByPartOfSpeech)[$callbackQueryData - 1]["usageExample"] . '" WHERE chat_id = ' . $chatId . ' AND word = "' . $word . '"';
         mysqli_query($link, $sql);
 
         $reply = "Определение успешно добавлено!";
@@ -164,6 +164,7 @@ function addDefinitionToList(object $telegram, int $chatId, mysqli $link, string
 
     $telegram->sendMessage([ 'chat_id' => $chatId, 'text' => $reply ]);
 }
+
 
 function textEntered(object $telegram, mysqli $link, string $tempWordInfoFile, int $chatId, string $text): void
 {
