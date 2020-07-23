@@ -399,7 +399,7 @@ function learnWords(object $telegram, mysqli $link, int $chatId): void
     {
         $whichWordsToLearn = "";
 
-        for ($wordNum = 1; $wordNum <= $maxWordNum; $wordNum++)
+        for ($wordNum = 2; $wordNum <= $maxWordNum; $wordNum++)
         {
             $whichWordsToLearn .= " $wordNum";
         }
