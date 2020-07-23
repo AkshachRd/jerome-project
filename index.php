@@ -156,7 +156,7 @@ function getResponseFromLearning(object $telegram, mysqli $link, int $chatId, st
         $wordInfo = getWordInfoFromDB($link, $chatId, $nextWordNum);
 
         //Здесь 2 кнопки: 'Понел' и 'Непонел'
-        $inlineKeyboard = [[[ 'text' => "Балдеж", 'callback_data' => "good" ], [ 'text' => "Антибалдеж", 'callback_data' => "bad" ]]];
+        $inlineKeyboard = [[[ 'text' => "Хорошо", 'callback_data' => "good" ], [ 'text' => "Плохо", 'callback_data' => "bad" ]]];
         $keyboard = [ 'inline_keyboard' => $inlineKeyboard ];
         $replyMarkup = json_encode($keyboard);
 
@@ -186,7 +186,7 @@ function getResponseFromLearning(object $telegram, mysqli $link, int $chatId, st
         $sql = 'DELETE which_words_to_learn FROM users_data WHERE chat_id = ' . $chatId;
         mysqli_query($link, $sql);
 
-        $reply = 'Укакой, уже зкончил. Теперь можешь довольно поурчать)';
+        $reply = 'Увоооу, уже закончил. Теперь можешь довольно поурчать)';
 
         $telegram->sendMessage([ 'chat_id' => $chatId, 'text' => $reply ]);
     }
@@ -423,7 +423,7 @@ function learnWords(object $telegram, mysqli $link, int $chatId): void
         $wordInfo = getWordInfoFromDB($link, $chatId, 1);
 
         //Здесь 2 кнопки: 'Понел' и 'Непонел'
-        $inlineKeyboard = [[[ 'text' => "Балдеж", 'callback_data' => "good" ], [ 'text' => "Антибалдеж", 'callback_data' => "bad" ]]];
+        $inlineKeyboard = [[[ 'text' => "Хорошо", 'callback_data' => "good" ], [ 'text' => "Плохо", 'callback_data' => "bad" ]]];
         $keyboard = [ 'inline_keyboard' => $inlineKeyboard ];
         $replyMarkup = json_encode($keyboard);
 
