@@ -212,7 +212,7 @@ function addWordToList(object $telegram, object $db, int $chatId, array $wordInf
         $reply = "Слово уже есть в списке. Расслабься :).";
     }
 
-    $telegram->
+    $telegram->sendMessage([ 'chat_id' => $chatId, 'text' => $reply ]);
 }
 
 function addWordToDBList(object $db, int $chatId, int $WordNum, array $wordInfo): void
@@ -249,6 +249,4 @@ function getTempWordInfoFromDB(object $db, int $chatId): ?array
     $db->where('chat_id', $chatId);
 
     return json_decode($db->getOne('users_data', 'temp_word_info')["temp_word_info"], true);
-
-    $db->disconnect();
 }
