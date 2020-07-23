@@ -342,7 +342,7 @@ function learnWords(object $telegram, mysqli $link, int $chatId): void
 {
     $sql = 'SELECT MAX(word_num) FROM word_list WHERE chat_id = ' . $chatId;
     $sqlResult = mysqli_query($link, $sql);
-    $maxWordNum = (int)mysqli_fetch_array($sqlResult)[["MAX(word_num)"];
+    $maxWordNum = (int)mysqli_fetch_array($sqlResult)["MAX(word_num)"];
 
     if (!empty($maxWordNum))
     {
