@@ -190,6 +190,10 @@ function addWordToList(object $telegram, object $db, int $chatId, array $wordInf
 {
     $word = $wordInfo["word"];
     $wordNum = getNumOfWordInList($db, $chatId, $word);
+    if (empty($wordNum))
+    {
+        $telegram->sendMessage([ 'chat_id' => $chatId, 'text' => 'номера нет нихуя ' . $word ]);
+    }
 
     if (empty($wordNum))
     {
@@ -262,7 +266,6 @@ function getTempWordInfoFromDB(object $db, int $chatId): ?array
 function getNumOfWordInList(object $db, int $chatId, string $word): ?int
 {
     $db->where('chat_id', $chatId)->where('word', $word);
-    $wordNum = $db->getOne('word_list', 'word_num')["word_num"];
 
-    return $wordNum;
+    return  $db->getOne('word_list', 'word_num')["word_num"];
 }
