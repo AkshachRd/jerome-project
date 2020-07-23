@@ -194,7 +194,7 @@ function addWordToList(object $telegram, object $db, int $chatId, array $wordInf
 
     if (empty($wordNum))
     {
-        $db = new MysqliDb($db);
+        $db = new MysqliDb (DB_HOST, DB_USERNAME, DB_PASSWORD, DB_NAME);
 
         $maxWordNum = $db->rawQueryOne("SELECT MAX(word_num) FROM word_list WHERE chat_id=$chatId")["MAX(word_num)"];
 
