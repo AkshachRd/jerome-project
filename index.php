@@ -174,6 +174,11 @@ function getButtonPartOfSpeechAnswer(object $telegram, int $chatId, array $inlin
     file_put_contents($tempWordInfoFile, serialize($tempWordInfo));
 }
 
+function getResponseFromLearning()
+{
+
+}
+
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
                                              /* Добавить слово в список */
@@ -399,7 +404,7 @@ function learnWords(object $telegram, mysqli $link, int $chatId): void
             $whichWordsToLearn .= " $wordNum";
         }
 
-        $sql = 'INSERT users_data(which_words_to_learn) VALUES ("' . $whichWordsToLearn . '") WHERE chat_id = ' . $chatId;
+        $sql = 'UPDATE users_data SET which_words_to_learn = "' . $whichWordsToLearn . '" WHERE chat_id = ' . $chatId;
         mysqli_query($link, $sql);
 
         $wordInfo = getWordInfoFromDB($link, $chatId, 1);
