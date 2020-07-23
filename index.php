@@ -211,7 +211,7 @@ function addWordToList(object $telegram, mysqli $link, int $chatId, array $wordI
         {
             //В $wordNum номер последнего слова. Добавляю следующее слово в список
             addWordToDBList($link, $chatId, $maxWordNum + 1, $wordInfo);
-            $telegram->sendMessage([ 'chat_id' => $chatId, 'text' => 'Я тута' ]);
+            $telegram->sendMessage([ 'chat_id' => $chatId, 'text' => json_encode($wordInfo) ]);
         }
         else
         {
