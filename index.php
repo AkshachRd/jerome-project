@@ -13,9 +13,16 @@ $result = $telegram -> getWebhookUpdates(); //Передаем в перемен
 $text = $result["message"]["text"]; //Текст сообщения
 $chatId = $result["message"]["chat"]["id"]; //Уникальный идентификатор пользователя
 $name = $result["message"]["from"]["username"]; //Юзернейм пользователя
+$keyboard = [["Учить слова"]]; //Клавиатура
 $callbackQuery = $result["callback_query"]; //Запрос, возвращенный кнопкой
 
 $tempWordInfoFile = 'tempWordInfoFile.txt'; //Временный файл для хранения массива с информацией о слове
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+                                                /* Основаная программа */
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 
 if (!empty($callbackQuery))
 {
@@ -23,6 +30,9 @@ if (!empty($callbackQuery))
 }
 elseif (!empty($text))
 {
+    $replyMarkup = $telegram->replyKeyboardMarkup([ 'keyboard' => $keyboard, 'resize_keyboard' => true ]);
+    $telegram->sendMessage([ 'chat_id' => $chatId, 'reply_markup' => $replyMarkup ]);
+
     textEntered($telegram, $link, $tempWordInfoFile, $chatId, $text);
 }
 else
@@ -30,8 +40,14 @@ else
     $telegram->sendMessage([ 'chat_id' => $chatId, 'text' => "Отправьте текстовое сообщение." ]);
 }
 
+//Логика программы
+//Перва функция после заголовка --- основаная (из нее запускаются остальные функции)
+//Остальные функции             --- вспомогательные (они запускаются из основной функции)
 
 
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+                                                    /* Кнопки */
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
 function getButtonAnswer(object $telegram, mysqli $link, string $tempWordInfoFile, array $callbackQuery): void
@@ -74,11 +90,11 @@ function getButtonDefinitionsAnswer(object $telegram, int $chatId, array $inline
 
     //Здесь возможные кнопки 'существительное', 'глагол', 'прилагательное', 'наречие', 'междометие'
     $keyboard = [ 'inline_keyboard' => $inlineKeyboard ];
-    $reply_markup = json_encode($keyboard);
+    $replyMarkup = json_encode($keyboard);
 
     $reply = "What part of speech is your word?";
 
-    $telegram->sendMessage([ 'chat_id' => $chatId, 'text' => $reply, 'reply_markup' => $reply_markup ]);
+    $telegram->sendMessage([ 'chat_id' => $chatId, 'text' => $reply, 'reply_markup' => $replyMarkup ]);
 }
 
 function getButtonPartOfSpeechAnswer(object $telegram, int $chatId, array $inlineKeyboard, string $tempWordInfoFile, string $callbackQueryData, array $tempWordInfo): void
@@ -104,9 +120,9 @@ function getButtonPartOfSpeechAnswer(object $telegram, int $chatId, array $inlin
 
     //Здесь разлчное количество кнопок: от 1 до 3, в виде '1', '2', '3'
     $keyboard = [ 'inline_keyboard' => $inlineKeyboard ];
-    $reply_markup = json_encode($keyboard);
+    $replyMarkup = json_encode($keyboard);
 
-    $telegram->sendMessage([ 'chat_id' => $chatId, 'text' => $reply, 'parse_mode' => "HTML", 'reply_markup' => $reply_markup ]);
+    $telegram->sendMessage([ 'chat_id' => $chatId, 'text' => $reply, 'parse_mode' => "HTML", 'reply_markup' => $replyMarkup ]);
 
     $definitionsByPartOfSpeech = array_intersect($definitionsByPartOfSpeech, [$callbackQueryData => $definitionsByPartOfSpeech[$callbackQueryData]]);
     $tempWordInfo["definitionsByPartOfSpeech"] = $definitionsByPartOfSpeech;
@@ -114,6 +130,49 @@ function getButtonPartOfSpeechAnswer(object $telegram, int $chatId, array $inlin
     //Вставляю в файл временный массив
     file_put_contents($tempWordInfoFile, "");
     file_put_contents($tempWordInfoFile, serialize($tempWordInfo));
+}
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+                                             /* Добавить слово в список */
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+function addWordToList(object $telegram, mysqli $link, int $chatId, array $wordInfo): void
+{
+    $word = $wordInfo["word"];
+
+    $sql = 'SELECT word_num FROM word_list WHERE chat_id = ' . $chatId . ' AND word = "' . $word . '"';
+    $sqlResult = mysqli_query($link, $sql);
+
+    $wordNum = (int)mysqli_fetch_array($sqlResult)["word_num"];
+
+    if (empty($wordNum))
+    {
+        $sql = 'SELECT MAX(word_num) FROM word_list WHERE chat_id = ' . $chatId;
+        $sqlResult = mysqli_query($link, $sql);
+
+        $maxWordNum = (int)mysqli_fetch_array($sqlResult)["MAX(word_num)"];
+
+        if (!empty($maxWordNum))
+        {
+            //В $wordNum номер последнего слова. Добавляю следующее слово в список
+            addWordToDBList($link, $chatId, $maxWordNum + 1, $wordInfo);
+        }
+        else
+        {
+            //Номера последнего слова нет. Добавляю первое слово в списке
+            addWordToDBList($link, $chatId, 1, $wordInfo);
+        }
+
+        $reply = "Слово успешно добавлено!";
+    }
+    else
+    {
+        $reply = "Слово уже есть в списке. Расслабься :)";
+    }
+
+    $telegram->sendMessage([ 'chat_id' => $chatId, 'text' => $reply ]);
 }
 
 function addDefinitionToList(object $telegram, int $chatId, mysqli $link, string $callbackQueryData, array $tempWordInfo): void
@@ -165,6 +224,18 @@ function addDefinitionToList(object $telegram, int $chatId, mysqli $link, string
     $telegram->sendMessage([ 'chat_id' => $chatId, 'text' => $reply ]);
 }
 
+function addWordToDBList(mysqli $link, int $chatId, int $wordNum, array $wordInfo): void
+{
+    $sql = 'INSERT word_list(chat_id, word_num, word, transcription_uk, transcription_us, audio_uk, audio_us, translation) VALUES (' . $chatId . ', ' . $wordNum . ', "' . $wordInfo["word"] . '", "' . $wordInfo["pronunciations"]["transcriptionUK"] . '", "' . $wordInfo["pronunciations"]["transcriptionUS"] . '", "' . $wordInfo["pronunciations"]["audioUK"] . '", "' . $wordInfo["pronunciations"]["audioUS"] . '", "' . $wordInfo["translation"] . '")';
+
+    mysqli_query($link, $sql);
+}
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+                                                    /* Введен текст */
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 
 function textEntered(object $telegram, mysqli $link, string $tempWordInfoFile, int $chatId, string $text): void
 {
@@ -176,6 +247,10 @@ function textEntered(object $telegram, mysqli $link, string $tempWordInfoFile, i
         $reply = "Добро пожаловать в бота!\nЭтот бот призван помочь тебе выучить ОнГлИйСкИе слова. Ты можешь создать свой список слов и повторять их, когда тебе будет удобно. Бот будет присылать тебе оповещения ";
         $telegram->sendMessage([ 'chat_id' => $chatId, 'text' => $reply ]);
     }
+    elseif ($text == "Учить слова")
+    {
+        learnWords($telegram, $link, $chatId);
+    }
     else
     {
         $text = strtolower($text);
@@ -183,59 +258,13 @@ function textEntered(object $telegram, mysqli $link, string $tempWordInfoFile, i
 
         if ($wordInfo["wordIsCorrect"])
         {
-            $pronunciations = $wordInfo["pronunciations"];
-            $translation = $wordInfo["translation"];
-
-            if (!empty($pronunciations["transcriptionUK"]))
-            {
-                $transcriptionUK = "\xF0\x9F\x87\xAC\xF0\x9F\x87\xA7:" . $pronunciations["transcriptionUK"];
-            }
-            else
-            {
-                $transcriptionUK = "";
-            }
-            if (!empty($pronunciations["transcriptionUS"]))
-            {
-                $transcriptionUS = "\xF0\x9F\x87\xBA\xF0\x9F\x87\xB8:" . $pronunciations["transcriptionUS"];
-            }
-            else
-            {
-                $transcriptionUS = "";
-            }
-
-            $text[0] = strtoupper($text[0]);
-            if ($transcriptionUK === "" && $transcriptionUS === "")
-            {
-                $reply = "<b>$text</b>\n<b>$translation</b>";
-            }
-            elseif ($transcriptionUK === "")
-            {
-                $reply = "<b>$text</b>\n$transcriptionUS\n<b>$translation</b>";
-            }
-            elseif ($transcriptionUS === "")
-            {
-                $reply = "<b>$text</b>\n$transcriptionUK\n<b>$translation</b>";
-            }
-            else
-            {
-                $reply = "<b>$text</b>\n$transcriptionUK   $transcriptionUS\n<b>$translation</b>";
-            }
-
             //Здесь 2 кнопки: 'Определение' и 'Список'
             $inlineKeyboard = [[[ 'text' => "Definitions", 'callback_data' => "definitions" ], [ 'text' => "Add to the list", 'callback_data' => "add_to_the_list" ]]];
             $keyboard = [ 'inline_keyboard' => $inlineKeyboard ];
-            $reply_markup = json_encode($keyboard);
+            $replyMarkup = json_encode($keyboard);
 
-            $telegram->sendMessage([ 'chat_id' => $chatId, 'text' => $reply, 'parse_mode' => "HTML", 'reply_markup' => $reply_markup ]);
-
-            if (!empty($pronunciations["audioUK"]))
-            {
-                $telegram->sendAudio([ 'chat_id' => $chatId, 'audio' => $pronunciations["audioUK"], 'title' => "British accent" ]);
-            }
-            if (!empty($pronunciations["audioUS"]))
-            {
-                $telegram->sendAudio([ 'chat_id' => $chatId, 'audio' => $pronunciations["audioUS"], 'title' => "American accent" ]);
-            }
+            printWordAndTranscription($telegram, $chatId, $replyMarkup, $wordInfo);
+            sendAudio($telegram, $chatId, $wordInfo);
 
             //Вставляю в файл временный массив
             unset($wordInfo["wordIsCorrect"]);
@@ -250,49 +279,118 @@ function textEntered(object $telegram, mysqli $link, string $tempWordInfoFile, i
     }
 }
 
-
-
-//Функции, работающие с БД
-function addWordToList(object $telegram, mysqli $link, int $chatId, array $wordInfo): void
+function printWordAndTranscription(object $telegram, int $chatId, string $replyMarkup, array $wordInfo): void
 {
     $word = $wordInfo["word"];
+    $pronunciations = $wordInfo["pronunciations"];
+    $translation = $wordInfo["translation"];
 
-    $sql = 'SELECT word_num FROM word_list WHERE chat_id = ' . $chatId . ' AND word = "' . $word . '"';
-    $sqlResult = mysqli_query($link, $sql);
-
-    $wordNum = (int)mysqli_fetch_array($sqlResult)["word_num"];
-
-    if (empty($wordNum))
+    if (!empty($pronunciations["transcriptionUK"]))
     {
-        $sql = 'SELECT MAX(word_num) FROM word_list WHERE chat_id = ' . $chatId;
-        $sqlResult = mysqli_query($link, $sql);
-
-        $maxWordNum = (int)mysqli_fetch_array($sqlResult)["MAX(word_num)"];
-
-        if (!empty($maxWordNum))
-        {
-            //В $wordNum номер последнего слова. Добавляю следующее слово в список
-            addWordToDBList($link, $chatId, $maxWordNum + 1, $wordInfo);
-        }
-        else
-        {
-            //Номера последнего слова нет. Добавляю первое слово в списке
-            addWordToDBList($link, $chatId, 1, $wordInfo);
-        }
-
-        $reply = "Слово успешно добавлено!";
+        $transcriptionUK = "\xF0\x9F\x87\xAC\xF0\x9F\x87\xA7:" . $pronunciations["transcriptionUK"];
     }
     else
     {
-        $reply = "Слово уже есть в списке. Расслабься :)";
+        $transcriptionUK = "";
+    }
+    if (!empty($pronunciations["transcriptionUS"]))
+    {
+        $transcriptionUS = "\xF0\x9F\x87\xBA\xF0\x9F\x87\xB8:" . $pronunciations["transcriptionUS"];
+    }
+    else
+    {
+        $transcriptionUS = "";
     }
 
-    $telegram->sendMessage([ 'chat_id' => $chatId, 'text' => $reply ]);
+    if ($transcriptionUK === "" && $transcriptionUS === "")
+    {
+        $reply = "<b>$word</b>\n<b>$translation</b>";
+    }
+    elseif ($transcriptionUK === "")
+    {
+        $reply = "<b>$word</b>\n$transcriptionUS\n<b>$translation</b>";
+    }
+    elseif ($transcriptionUS === "")
+    {
+        $reply = "<b>$word</b>\n$transcriptionUK\n<b>$translation</b>";
+    }
+    else
+    {
+        $reply = "<b>$word</b>\n$transcriptionUK   $transcriptionUS\n<b>$translation</b>";
+    }
+
+    $telegram->sendMessage([ 'chat_id' => $chatId, 'text' => $reply, 'parse_mode' => "HTML", 'reply_markup' => $replyMarkup ]);
 }
 
-function addWordToDBList(mysqli $link, int $chatId, int $wordNum, array $wordInfo): void
+function sendAudio(object $telegram, int $chatId, array $wordInfo): void
 {
-    $sql = 'INSERT word_list(chat_id, word_num, word, transcription_uk, transcription_us, audio_uk, audio_us, translation) VALUES (' . $chatId . ', ' . $wordNum . ', "' . $wordInfo["word"] . '", "' . $wordInfo["pronunciations"]["transcriptionUK"] . '", "' . $wordInfo["pronunciations"]["transcriptionUS"] . '", "' . $wordInfo["pronunciations"]["audioUK"] . '", "' . $wordInfo["pronunciations"]["audioUS"] . '", "' . $wordInfo["translation"] . '")';
+    $pronunciations = $wordInfo["pronunciations"];
 
-    mysqli_query($link, $sql);
+    if (!empty($pronunciations["audioUK"]))
+    {
+        $telegram->sendAudio([ 'chat_id' => $chatId, 'audio' => $pronunciations["audioUK"], 'title' => "British accent" ]);
+    }
+    if (!empty($pronunciations["audioUS"]))
+    {
+        $telegram->sendAudio([ 'chat_id' => $chatId, 'audio' => $pronunciations["audioUS"], 'title' => "American accent" ]);
+    }
+}
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+                                               /* Учить слова */
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+function learnWords(object $telegram, mysqli $link, int $chatId): void
+{
+    $sql = 'SELECT MAX(word_num) FROM word_list WHERE chat_id = ' . $chatId;
+    $sqlResult = mysqli_query($link, $sql);
+    $maxWordNum = (int)mysqli_fetch_array($sqlResult)["word_num"];
+
+    if (!empty($maxWordNum))
+    {
+        for ($wordNum = 1; $wordNum <= $maxWordNum; $wordNum++)
+        {
+            $wordInfo = getWordInfoFromDB($link, $chatId, $wordNum);
+
+            //Здесь 2 кнопки: 'Понел' и 'Непонел'
+            $inlineKeyboard = [[[ 'text' => "Балдеж", 'callback_data' => "good" ], [ 'text' => "Антибалдеж", 'callback_data' => "bad" ]]];
+            $keyboard = [ 'inline_keyboard' => $inlineKeyboard ];
+            $replyMarkup = json_encode($keyboard);
+
+            printWordAndTranscription($telegram, $chatId, $replyMarkup, $wordInfo);
+
+            //Отправляю определение
+            $reply = $wordInfo["definition"] . '\nUsage example: <i>' . $wordInfo["usage_example"] . '</i>';
+            $telegram->sendMessage([ 'chat_id' => $chatId, 'text' => $reply, 'parse_mode' => "HTML" ]);
+
+            sendAudio($telegram, $chatId, $wordInfo);
+        }
+    }
+    else
+    {
+        $reply = 'НЕТУ СЛОВ БЛИН. Нужно скорее добавить!!!';
+
+        $telegram->sendMessage([ 'chat_id' => $chatId, 'text' => $reply ]);
+    }
+}
+
+function getWordInfoFromDB(mysqli $link, int $chatId, int $wordNum): ?array
+{
+    $sql = 'SELECT word, transcription_uk, transcription_us, audio_uk, audio_us, translation, definition, usage_example FROM word_list WHERE chat_id = ' . $chatId . ' AND word_num = ' . $wordNum;
+    $sqlResult = mysqli_fetch_array(mysqli_query($link, $sql));
+
+    return array(
+        "word" => $sqlResult["word"],
+        "pronunciation" => array(
+            "transcriptionUK" => $sqlResult["transcription_uk"],
+            "transcriptionUS" => $sqlResult["transcription_us"],
+            "audioUK" => $sqlResult["audio_uk"],
+            "audioUS" => $sqlResult["audio_us"]
+        ),
+        "definition" => $sqlResult["definition"],
+        "usageExample" => $sqlResult["usage_example"],
+        "translation" => $sqlResult["translation"]
+    );
 }

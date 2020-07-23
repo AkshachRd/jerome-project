@@ -49,6 +49,7 @@ function getWordInfo(string $word): ?array
             $pronunciations = getPronunciations($entries);
             $definitionsByPartOfSpeech = getDefinitionsByPartOfSpeech($entries);
             $translation = getTranslation($entries["entry"]);
+            $translation[0] = strtoupper($translation[0]);
 
             return array(
                 "wordIsCorrect" => true,
@@ -76,7 +77,6 @@ function getTranslation(string $word): ?string
 
     $tr = new GoogleTranslateForFree();
     $result = $tr->translate($source, $target, $word, $attempts);
-    $result[0] = strtoupper($result[0]);
 
     return $result;
 }
@@ -158,4 +158,3 @@ function getDefinitions(array $lexeme): ?array
 
     return $definitions;
 }
-?>
