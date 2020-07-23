@@ -74,65 +74,7 @@ function getButtonAnswer(object $telegram, mysqli $link, string $tempWordInfoFil
     }
     elseif (in_array($callbackQueryData , [GOOD_MARK, BAD_MARK]))
     {
-        $sql = 'SELECT which_words_to_learn FROM users_data WHERE chat_id = ' . $chatId;
-        $sqlResult = mysqli_query($link, $sql);
-
-        $whichWordsToLearn = explode(' ', mysqli_fetch_array($sqlResult)["which_words_to_learn"]);
-
-        if (!empty($whichWordsToLearn[1]))
-        {
-            $currentWordNum = array_shift($whichWordsToLearn);
-
-            if ($callbackQueryData === BAD_MARK)
-            {
-                array_push($whichWordsToLearn, $currentWordNum);
-            }
-
-            $sql = 'UPDATE users_data SET which_words_to_learn = "' . implode(' ', $whichWordsToLearn) . '" WHERE chat_id = ' . $chatId;
-            mysqli_query($link, $sql);
-
-            $nextWordNum = reset($whichWordsToLearn);
-
-            $wordInfo = getWordInfoFromDB($link, $chatId, $nextWordNum);
-
-            //Здесь 2 кнопки: 'Понел' и 'Непонел'
-            $inlineKeyboard = [[[ 'text' => "Балдеж", 'callback_data' => "good" ], [ 'text' => "Антибалдеж", 'callback_data' => "bad" ]]];
-            $keyboard = [ 'inline_keyboard' => $inlineKeyboard ];
-            $replyMarkup = json_encode($keyboard);
-
-            printWordAndTranscription($telegram, $chatId, $replyMarkup, $wordInfo);
-
-            //Отправляю определение
-            if (!empty($wordInfo["definition"]) && !empty($wordInfo["usage_example"]))
-            {
-                $reply = $wordInfo["definition"] . "\nUsage example: <i>" . $wordInfo["usage_example"] . "</i>";
-            }
-            elseif (!empty($wordInfo["definition"]))
-            {
-                $reply = $wordInfo["definition"];
-            }
-            elseif (!empty($wordInfo["usage_example"])
-            {
-                $reply = "Usage example: <i>" . $wordInfo["usage_example"] . "</i>";
-            }
-            else
-            {
-                $reply = "";
-            }
-
-            $telegram->sendMessage([ 'chat_id' => $chatId, 'text' => $reply, 'parse_mode' => "HTML" ]);
-
-            sendAudio($telegram, $chatId, $wordInfo);
-        }
-        else
-        {
-            $sql = 'DELETE which_words_to_learn FROM users_data WHERE chat_id = ' . $chatId;
-            mysqli_query($link, $sql);
-
-            $reply = 'Укакой, уже зкончил. Теперь можешь довольно поурчать)';
-
-            $telegram->sendMessage([ 'chat_id' => $chatId, 'text' => $reply ]);
-        }
+        getResponseFromLearning($telegram, $link, $chatId, $callbackQueryData);
     }
 }
 
@@ -190,9 +132,67 @@ function getButtonPartOfSpeechAnswer(object $telegram, int $chatId, array $inlin
     file_put_contents($tempWordInfoFile, serialize($tempWordInfo));
 }
 
-function getResponseFromLearning()
+function getResponseFromLearning(object $telegram, mysqli $link, int $chatId, string $callbackQueryData): void
 {
+    $sql = 'SELECT which_words_to_learn FROM users_data WHERE chat_id = ' . $chatId;
+    $sqlResult = mysqli_query($link, $sql);
 
+    $whichWordsToLearn = explode(' ', mysqli_fetch_array($sqlResult)["which_words_to_learn"]);
+
+    if (!empty($whichWordsToLearn[1]))
+    {
+        $currentWordNum = array_shift($whichWordsToLearn);
+
+        if ($callbackQueryData === BAD_MARK)
+        {
+            array_push($whichWordsToLearn, $currentWordNum);
+        }
+
+        $sql = 'UPDATE users_data SET which_words_to_learn = "' . implode(' ', $whichWordsToLearn) . '" WHERE chat_id = ' . $chatId;
+        mysqli_query($link, $sql);
+
+        $nextWordNum = reset($whichWordsToLearn);
+
+        $wordInfo = getWordInfoFromDB($link, $chatId, $nextWordNum);
+
+        //Здесь 2 кнопки: 'Понел' и 'Непонел'
+        $inlineKeyboard = [[[ 'text' => "Балдеж", 'callback_data' => "good" ], [ 'text' => "Антибалдеж", 'callback_data' => "bad" ]]];
+        $keyboard = [ 'inline_keyboard' => $inlineKeyboard ];
+        $replyMarkup = json_encode($keyboard);
+
+        printWordAndTranscription($telegram, $chatId, $replyMarkup, $wordInfo);
+
+        //Отправляю определение
+        if (!empty($wordInfo["definition"]) && !empty($wordInfo["usage_example"]))
+        {
+            $reply = $wordInfo["definition"] . "\nUsage example: <i>" . $wordInfo["usage_example"] . "</i>";
+        }
+        elseif (!empty($wordInfo["definition"]))
+        {
+            $reply = $wordInfo["definition"];
+        }
+        elseif (!empty($wordInfo["usage_example"]))
+        {
+            $reply = "Usage example: <i>" . $wordInfo["usage_example"] . "</i>";
+        }
+        else
+        {
+            $reply = "";
+        }
+
+        $telegram->sendMessage([ 'chat_id' => $chatId, 'text' => $reply, 'parse_mode' => "HTML" ]);
+
+        sendAudio($telegram, $chatId, $wordInfo);
+    }
+    else
+    {
+        $sql = 'DELETE which_words_to_learn FROM users_data WHERE chat_id = ' . $chatId;
+        mysqli_query($link, $sql);
+
+        $reply = 'Укакой, уже зкончил. Теперь можешь довольно поурчать)';
+
+        $telegram->sendMessage([ 'chat_id' => $chatId, 'text' => $reply ]);
+    }
 }
 
 
@@ -441,7 +441,7 @@ function learnWords(object $telegram, mysqli $link, int $chatId): void
         {
             $reply = $wordInfo["definition"];
         }
-        elseif (!empty($wordInfo["usage_example"])
+        elseif (!empty($wordInfo["usage_example"]))
         {
             $reply = "Usage example: <i>" . $wordInfo["usage_example"] . "</i>";
         }
