@@ -36,7 +36,8 @@ function getButtonAnswer(object $telegram, object $db, array $callbackQuery): vo
 {
     $callbackQueryData = $callbackQuery["data"];
     $chatId = $callbackQuery["message"]["chat"]["id"];
-    $definitionsByPartOfSpeech = getTempWordInfoFromDB($db, $chatId)["definitionsByPartOfSpeech"]; //Получаю из БД временный массив
+    $tempWordInfo = getTempWordInfoFromDB($db, $chatId);
+    $definitionsByPartOfSpeech = $tempWordInfo["definitionsByPartOfSpeech"]; //Получаю из БД временный массив
     $inlineKeyboard = [[]];
 
     if ($callbackQueryData === 'definitions')
@@ -49,7 +50,7 @@ function getButtonAnswer(object $telegram, object $db, array $callbackQuery): vo
     }
     elseif ($callbackQueryData === 'add_to_the_list')
     {
-        addWordToList($telegram, $db, $chatId, $callbackQuery);
+        addWordToList($telegram, $db, $chatId, $tempWordInfo);
     }
 }
 
