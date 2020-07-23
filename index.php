@@ -189,13 +189,10 @@ function textEntered(object $telegram, object $db, int $chatId, string $text): v
 function addWordToList(object $telegram, object $db, int $chatId, array $wordInfo): void
 {
     $word = $wordInfo["word"];
-    $db->where('chat_id', $chatId)->where('word', $word);
-    $wordNum = $db->getOne('word_list', 'word_num')["word_num"];
-    $db->disconnect();
+    $wordNum = getNumOfWordInList($db, $chatId, $word);
 
     if (empty($wordNum))
     {
-        $db = new MysqliDb (DB_HOST, DB_USERNAME, DB_PASSWORD, DB_NAME);
         $db->where('chat_id', $chatId);
         $maxWordNum = end($db->get('word_list', null, 'word_num'))["word_num"];
         //$maxWordNum = $db->rawQuery('SELECT MAX(word_num) FROM word_list WHERE chat_id=' . "$chatId")["MAX(word_num)"];
@@ -260,4 +257,12 @@ function getTempWordInfoFromDB(object $db, int $chatId): ?array
     $db->where('chat_id', $chatId);
 
     return json_decode($db->getOne('users_data', 'temp_word_info')["temp_word_info"], true);
+}
+
+function getNumOfWordInList(object $db, int $chatId, string $word): ?int
+{
+    $db->where('chat_id', $chatId)->where('word', $word);
+    $wordNum = $db->getOne('word_list', 'word_num')["word_num"];
+
+    return $wordNum;
 }
