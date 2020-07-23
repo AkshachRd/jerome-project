@@ -72,6 +72,52 @@ function getButtonAnswer(object $telegram, mysqli $link, string $tempWordInfoFil
     {
         addWordToList($telegram, $link, $chatId, $tempWordInfo);
     }
+    elseif (in_array($callbackQueryData , [GOOD_MARK, BAD_MARK]))
+    {
+        $sql = 'SELECT which_words_to_learn FROM users_data WHERE chat_id = ' . $chatId;
+        $sqlResult = mysqli_query($link, $sql);
+
+        $whichWordsToLearn = explode(' ', mysqli_fetch_array($sqlResult)["which_words_to_learn"]);
+
+        if (!empty($whichWordsToLearn))
+        {
+            $currentWordNum = array_shift($whichWordsToLearn);
+
+            if ($callbackQueryData === BAD_MARK)
+            {
+                array_push($whichWordsToLearn, $currentWordNum);
+            }
+
+            $sql = 'UPDATE users_data SET which_words_to_learn = "' . implode(' ', $whichWordsToLearn) . '" WHERE chat_id = ' . $chatId;
+            mysqli_query($link, $sql);
+
+            $nextWordNum = reset($whichWordsToLearn);
+
+            $wordInfo = getWordInfoFromDB($link, $chatId, $nextWordNum);
+
+            //Здесь 2 кнопки: 'Понел' и 'Непонел'
+            $inlineKeyboard = [[[ 'text' => "Балдеж", 'callback_data' => "good" ], [ 'text' => "Антибалдеж", 'callback_data' => "bad" ]]];
+            $keyboard = [ 'inline_keyboard' => $inlineKeyboard ];
+            $replyMarkup = json_encode($keyboard);
+
+            printWordAndTranscription($telegram, $chatId, $replyMarkup, $wordInfo);
+
+            //Отправляю определение
+            $reply = $wordInfo["definition"] . "\nUsage example: <i>" . $wordInfo["usage_example"] . "</i>";
+            $telegram->sendMessage([ 'chat_id' => $chatId, 'text' => $reply, 'parse_mode' => "HTML" ]);
+
+            sendAudio($telegram, $chatId, $wordInfo);
+        }
+        else
+        {
+            $sql = 'DELETE which_words_to_learn FROM users_data WHERE chat_id = ' . $chatId;
+            mysqli_query($link, $sql);
+
+            $reply = 'Укакой, уже зкончил. Теперь можешь довольно поурчать)';
+
+            $telegram->sendMessage([ 'chat_id' => $chatId, 'text' => $reply ]);
+        }
+    }
 }
 
 function getButtonDefinitionsAnswer(object $telegram, int $chatId, array $inlineKeyboard, array $definitionsByPartOfSpeech): void
@@ -334,7 +380,7 @@ function sendAudio(object $telegram, int $chatId, array $wordInfo): void
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-                                               /* Учить слова */
+                                                 /* Учить слова */
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
@@ -346,23 +392,30 @@ function learnWords(object $telegram, mysqli $link, int $chatId): void
 
     if (!empty($maxWordNum))
     {
+        $whichWordsToLearn = "";
+
         for ($wordNum = 1; $wordNum <= $maxWordNum; $wordNum++)
         {
-            $wordInfo = getWordInfoFromDB($link, $chatId, $wordNum);
-
-            //Здесь 2 кнопки: 'Понел' и 'Непонел'
-            $inlineKeyboard = [[[ 'text' => "Балдеж", 'callback_data' => "good" ], [ 'text' => "Антибалдеж", 'callback_data' => "bad" ]]];
-            $keyboard = [ 'inline_keyboard' => $inlineKeyboard ];
-            $replyMarkup = json_encode($keyboard);
-
-            printWordAndTranscription($telegram, $chatId, $replyMarkup, $wordInfo);
-
-            //Отправляю определение
-            $reply = $wordInfo["definition"] . '\nUsage example: <i>' . $wordInfo["usage_example"] . '</i>';
-            $telegram->sendMessage([ 'chat_id' => $chatId, 'text' => $reply, 'parse_mode' => "HTML" ]);
-
-            sendAudio($telegram, $chatId, $wordInfo);
+            $whichWordsToLearn .= " $wordNum";
         }
+
+        $sql = 'INSERT users_data(which_words_to_learn) VALUES ("' . $whichWordsToLearn . '") WHERE chat_id = ' . $chatId;
+        mysqli_query($link, $sql);
+
+        $wordInfo = getWordInfoFromDB($link, $chatId, 1);
+
+        //Здесь 2 кнопки: 'Понел' и 'Непонел'
+        $inlineKeyboard = [[[ 'text' => "Балдеж", 'callback_data' => "good" ], [ 'text' => "Антибалдеж", 'callback_data' => "bad" ]]];
+        $keyboard = [ 'inline_keyboard' => $inlineKeyboard ];
+        $replyMarkup = json_encode($keyboard);
+
+        printWordAndTranscription($telegram, $chatId, $replyMarkup, $wordInfo);
+
+        //Отправляю определение
+        $reply = $wordInfo["definition"] . "\nUsage example: <i>" . $wordInfo["usage_example"] . "</i>";
+        $telegram->sendMessage([ 'chat_id' => $chatId, 'text' => $reply, 'parse_mode' => "HTML" ]);
+
+        sendAudio($telegram, $chatId, $wordInfo);
     }
     else
     {
