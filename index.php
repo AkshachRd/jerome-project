@@ -189,6 +189,7 @@ function addWordToList(object $telegram, object $db, int $chatId, array $wordInf
 {
     $word = $wordInfo["word"];
     $wordNum = $db->rawQueryOne("SELECT word_num FROM word_list WHERE word=$word")["word_num"];
+    $telegram->sendMessage([ 'chat_id' => $chatId, 'text' => $wordNum ]);
 
     if (empty($wordNum))
     {
