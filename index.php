@@ -49,7 +49,7 @@ function getButtonAnswer(object $telegram, object $db, array $callbackQuery): vo
     }
     elseif ($callbackQueryData === 'add_to_the_list')
     {
-
+        addWordToList($db, $chatId, $callbackQuery);
     }
 }
 
@@ -242,7 +242,7 @@ function insertTempWordInfoToDB(object $db, int $chatId, array $tempWordInfo): v
     $db->replace('users_data', $data);
 }
 
-function getTempWordInfoFromDB(object $db, ): ?array
+function getTempWordInfoFromDB(object $db, int $chatId): ?array
 {
     $db->where('chat_id', $chatId);
 
