@@ -190,19 +190,10 @@ function addWordToList(object $telegram, mysqli $link, int $chatId, array $wordI
 {
     $word = $wordInfo["word"];
 
-    $reply = $word;
-    $telegram->sendMessage([ 'chat_id' => $chatId, 'text' => $reply ]);
-
     $sql = 'SELECT word_num FROM word_list WHERE chat_id = ' . $chatId . ' AND word = "' . $word . '"';
     $sqlResult = mysqli_query($link, $sql);
 
     $wordNum = (int)mysqli_fetch_array($sqlResult)["word_num"];
-
-    $reply = mysqli_fetch_array($sqlResult)[0];
-    $telegram->sendMessage([ 'chat_id' => $chatId, 'text' => $reply ]);
-
-    $reply = $wordNum;
-    $telegram->sendMessage([ 'chat_id' => $chatId, 'text' => $reply ]);
 
     if (empty($wordNum))
     {
@@ -251,7 +242,7 @@ function insertTempWordInfoToDB(mysqli $link, int $chatId, array $tempWordInfo):
 
     if (!empty(mysqli_fetch_array($sqlResult)))
     {
-        $sql = 'UPDATE users_data SET temp_word_info = ' . json_encode($tempWordInfo) . ' WHERE chat_id = ' . $chatId;
+        $sql = 'UPDATE users_data SET temp_word_info = "' . json_encode($tempWordInfo) . '" WHERE chat_id = ' . $chatId;
     }
     else
     {
