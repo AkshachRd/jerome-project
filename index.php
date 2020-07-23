@@ -166,21 +166,18 @@ function getResponseFromLearning(object $telegram, mysqli $link, int $chatId, st
         if (!empty($wordInfo["definition"]) && !empty($wordInfo["usage_example"]))
         {
             $reply = $wordInfo["definition"] . "\nUsage example: <i>" . $wordInfo["usage_example"] . "</i>";
+            $telegram->sendMessage([ 'chat_id' => $chatId, 'text' => $reply, 'parse_mode' => "HTML" ]);
         }
         elseif (!empty($wordInfo["definition"]))
         {
             $reply = $wordInfo["definition"];
+            $telegram->sendMessage([ 'chat_id' => $chatId, 'text' => $reply, 'parse_mode' => "HTML" ]);
         }
         elseif (!empty($wordInfo["usage_example"]))
         {
             $reply = "Usage example: <i>" . $wordInfo["usage_example"] . "</i>";
+            $telegram->sendMessage([ 'chat_id' => $chatId, 'text' => $reply, 'parse_mode' => "HTML" ]);
         }
-        else
-        {
-            $reply = "";
-        }
-
-        $telegram->sendMessage([ 'chat_id' => $chatId, 'text' => $reply, 'parse_mode' => "HTML" ]);
 
         sendAudio($telegram, $chatId, $wordInfo);
     }
@@ -436,21 +433,18 @@ function learnWords(object $telegram, mysqli $link, int $chatId): void
         if (!empty($wordInfo["definition"]) && !empty($wordInfo["usage_example"]))
         {
             $reply = $wordInfo["definition"] . "\nUsage example: <i>" . $wordInfo["usage_example"] . "</i>";
+            $telegram->sendMessage([ 'chat_id' => $chatId, 'text' => $reply, 'parse_mode' => "HTML" ]);
         }
         elseif (!empty($wordInfo["definition"]))
         {
             $reply = $wordInfo["definition"];
+            $telegram->sendMessage([ 'chat_id' => $chatId, 'text' => $reply, 'parse_mode' => "HTML" ]);
         }
         elseif (!empty($wordInfo["usage_example"]))
         {
             $reply = "Usage example: <i>" . $wordInfo["usage_example"] . "</i>";
+            $telegram->sendMessage([ 'chat_id' => $chatId, 'text' => $reply, 'parse_mode' => "HTML" ]);
         }
-        else
-        {
-            $reply = "";
-        }
-
-        $telegram->sendMessage([ 'chat_id' => $chatId, 'text' => $reply, 'parse_mode' => "HTML" ]);
 
         sendAudio($telegram, $chatId, $wordInfo);
     }
