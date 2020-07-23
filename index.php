@@ -194,6 +194,8 @@ function addWordToList(object $telegram, mysqli $link, int $chatId, array $wordI
     $sqlResult = mysqli_query($link, $sql);
 
     $wordNum = (int)mysqli_fetch_array($sqlResult)["word_num"];
+    $reply = $wordNum;
+    $telegram->sendMessage([ 'chat_id' => $chatId, 'text' => $reply ]);
 
     if (empty($wordNum))
     {
