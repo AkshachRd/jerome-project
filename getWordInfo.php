@@ -6,6 +6,7 @@ use \Dejurin\GoogleTranslateForFree;
 //Функция возвращает массив с информацией о слове
 function getWordInfo(string $word): ?array
 {
+    $originalWord = $word;
     //Заменяю пробел на %20, чтобы запрос фраз проходил корректно
     $word = str_replace(' ', '%20', $word);
 
@@ -44,12 +45,14 @@ function getWordInfo(string $word): ?array
         //Если слово существует, то получить данные
         if (!empty($entries))
         {
+            $originalWord[0] = strtoupper($originalWord[0]);
             $pronunciations = getPronunciations($entries);
             $definitionsByPartOfSpeech = getDefinitionsByPartOfSpeech($entries);
             $translation = getTranslation($entries["entry"]);
 
             return array(
                 "wordIsCorrect" => true,
+                "word" => $originalWord,
                 "pronunciations" => $pronunciations,
                 "definitionsByPartOfSpeech" => $definitionsByPartOfSpeech,
                 "translation" => $translation

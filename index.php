@@ -108,8 +108,10 @@ function textEntered(object $telegram, mysqli $link, string $tempWordInfoFile, i
 {
     if ($text == "/start")
     {
-        $reply = "Добро пожаловать в бота!\nЭтот бот призван помочь тебе выучить ОнГлИйСкИе слова. Ты можешь создать 
-            свой список слов и повторять их, когда тебе будет удобно. Бот будет присылать тебе оповещения ";
+        $sql = 'INSERT users_data(chat_id) VALUES (' . $chatId . ')'; //Помещаю пользователя в БД
+        mysqli_query($link, $sql);
+
+        $reply = "Добро пожаловать в бота!\nЭтот бот призван помочь тебе выучить ОнГлИйСкИе слова. Ты можешь создать свой список слов и повторять их, когда тебе будет удобно. Бот будет присылать тебе оповещения ";
         $telegram->sendMessage([ 'chat_id' => $chatId, 'text' => $reply ]);
     }
     else
@@ -120,7 +122,6 @@ function textEntered(object $telegram, mysqli $link, string $tempWordInfoFile, i
         if ($wordInfo["wordIsCorrect"])
         {
             $pronunciations = $wordInfo["pronunciations"];
-            $definitionsByPartOfSpeech = $wordInfo["definitionsByPartOfSpeech"];
             $translation = $wordInfo["translation"];
 
             if (!empty($pronunciations["transcriptionUK"]))
@@ -176,7 +177,6 @@ function textEntered(object $telegram, mysqli $link, string $tempWordInfoFile, i
 
             //Вставляю в файл временный массив
             unset($wordInfo["wordIsCorrect"]);
-            $wordInfo["word"] = $text;
             file_put_contents($tempWordInfoFile, "");
             file_put_contents($tempWordInfoFile, serialize($wordInfo));
         }
@@ -211,7 +211,6 @@ function addWordToList(object $telegram, mysqli $link, int $chatId, array $wordI
         {
             //В $wordNum номер последнего слова. Добавляю следующее слово в список
             addWordToDBList($link, $chatId, $maxWordNum + 1, $wordInfo);
-            $telegram->sendMessage([ 'chat_id' => $chatId, 'text' => json_encode($wordInfo) ]);
         }
         else
         {
