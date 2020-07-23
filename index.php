@@ -189,11 +189,13 @@ function textEntered(object $telegram, object $db, int $chatId, string $text): v
 function addWordToList(object $telegram, object $db, int $chatId, array $wordInfo): void
 {
     $word = $wordInfo["word"];
-    $wordNum = getNumOfWordInList($db, $chatId, $word);
-    if (empty($wordNum))
-    {
-        $telegram->sendMessage([ 'chat_id' => $chatId, 'text' => 'номера нет нихуя ' . $word ]);
-    }
+    $db->where('chat_id', $chatId)->where('word', $word);
+    $wordNum = $db->getOne('word_list', 'word_num')["word_num"];
+
+    if ($db->getLastErrno() === 0)
+        $telegram->sendMessage([ 'chat_id' => $chatId, 'text' => 'Update succesfull' ]);
+    else
+        $telegram->sendMessage([ 'chat_id' => $chatId, 'text' => 'Update failed. Error: '. $db->getLastError() ]);
 
     if (empty($wordNum))
     {
@@ -261,11 +263,4 @@ function getTempWordInfoFromDB(object $db, int $chatId): ?array
     $db->where('chat_id', $chatId);
 
     return json_decode($db->getOne('users_data', 'temp_word_info')["temp_word_info"], true);
-}
-
-function getNumOfWordInList(object $db, int $chatId, string $word): ?int
-{
-    $db->where('chat_id', $chatId)->where('word', $word);
-
-    return  $db->getOne('word_list', 'word_num')["word_num"];
 }
