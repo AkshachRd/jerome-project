@@ -49,6 +49,7 @@ function getButtonAnswer(object $telegram, object $db, array $callbackQuery): vo
     }
     elseif ($callbackQueryData === 'add_to_the_list')
     {
+        $telegram->sendMessage([ 'chat_id' => $chatId, 'text' => "Попал сюда" ]);
         addWordToList($telegram, $db, $chatId, $callbackQuery);
     }
 }
