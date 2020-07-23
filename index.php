@@ -13,68 +13,93 @@ $result = $telegram -> getWebhookUpdates(); //Передаем в перемен
 $text = $result["message"]["text"]; //Текст сообщения
 $chatId = $result["message"]["chat"]["id"]; //Уникальный идентификатор пользователя
 $name = $result["message"]["from"]["username"]; //Юзернейм пользователя
-$callbackQuery = $result["callback_query"];
-
-//Временно работаю с файлом, потом переделаю по работу с БД
-$definitionsFileName = 'definitions.txt';
+$callbackQuery = $result["callback_query"]; //Запрос, возвращенный кнопкой
 
 if (!empty($callbackQuery))
 {
+    getButtonAnswer($telegram, $db, $callbackQuery);
+}
+elseif (!empty($text))
+{
+    textEntered($telegram, $db, $chatId, $text);
+}
+else
+{
+    $telegram->sendMessage([ 'chat_id' => $chatId, 'text' => "Отправьте текстовое сообщение." ]);
+}
+
+
+
+
+
+function getButtonAnswer(object $telegram, object $db, array $callbackQuery): void
+{
     $callbackQueryData = $callbackQuery["data"];
     $chatId = $callbackQuery["message"]["chat"]["id"];
+    $definitionsByPartOfSpeech = getTempWordInfoFromDB($db, $chatId)["definitionsByPartOfSpeech"]; //Получаю из БД временный массив
     $inlineKeyboard = [[]];
 
     if ($callbackQueryData === 'definitions')
     {
-        //Получаю из БД временный массив
-        $definitionsByPartOfSpeech = getTempWordInfoFromDB($db, $chatId)["definitionsByPartOfSpeech"];
-
-        foreach ($definitionsByPartOfSpeech as $partOfSpeech => $lexemes)
-        {
-            $partOfSpeechText = $partOfSpeech;
-            $partOfSpeechText[0] = strtoupper($partOfSpeechText[0]);
-
-            array_push($inlineKeyboard[0], [ 'text' => $partOfSpeechText, 'callback_data' => $partOfSpeech ]);
-        }
-
-
-        //Здесь возможные кнопки 'существительное', 'глагол', 'прилагательное', 'наречие', 'междометие'
-        $keyboard = [ 'inline_keyboard' => $inlineKeyboard ];
-        $reply_markup = json_encode($keyboard);
-
-        $reply = "What part of speech is your word?" . $reply_markup;
-
-        $telegram->sendMessage([ 'chat_id' => $chatId, 'text' => $reply, 'reply_markup' => $reply_markup ]);
+        getButtonDefinitionsAnswer($telegram, $chatId, $inlineKeyboard, $definitionsByPartOfSpeech);
     }
-    elseif ($callbackQueryData === 'noun' || $callbackQueryData === 'verb' || $callbackQueryData === 'adjective' || $callbackQueryData === 'adverb' || $callbackQueryData === 'interjection')
+    elseif (in_array($callbackQueryData , [PART_OF_SPEECH_NOUN, PART_OF_SPEECH_VERB, PART_OF_SPEECH_ADJECTIVE, PART_OF_SPEECH_ADVERB, PART_OF_SPEECH_INTERJECTION]))
     {
-        //Получаю из БД временный массив
-        $definitionsByPartOfSpeech = getTempWordInfoFromDB($db, $chatId)["definitionsByPartOfSpeech"];
+        getButtonPartOfSpeechAnswer($telegram, $chatId, $inlineKeyboard, $callbackQueryData, $definitionsByPartOfSpeech);
+    }
+    elseif ($callbackQueryData === 'add_to_the_list')
+    {
 
-        foreach ($definitionsByPartOfSpeech[$callbackQueryData] as $index => $sense)
-        {
-            $definition = $sense["definition"];
-            $usageExample = $sense["usageExample"];
-            $index++;
-
-            $reply .= "<b>$index.</b> $definition\n";
-            if (!empty($usageExample))
-            {
-                $reply .= "Usage example: <i>$usageExample</i>\n";
-            }
-            $inlineKeyboard[0][$index - 1] = [ 'text' => "$index", 'callback_data' => "$index" ];
-        }
-
-        $reply .= "\nIf you want to add a definition with a word to the list, then choose the one that you like the most.";
-
-        //Здесь разлчное количество кнопок: от 1 до 3, в виде '1', '2', '3'
-        $keyboard = [ 'inline_keyboard' => $inlineKeyboard ];
-        $reply_markup = json_encode($keyboard);
-
-        $telegram->sendMessage([ 'chat_id' => $chatId, 'text' => $reply, 'parse_mode' => "HTML", 'reply_markup' => $reply_markup ]);
     }
 }
-elseif (!empty($text))
+
+function getButtonDefinitionsAnswer(object $telegram, int $chatId, array $inlineKeyboard, array $definitionsByPartOfSpeech): void
+{
+    foreach ($definitionsByPartOfSpeech as $partOfSpeech => $lexemes)
+    {
+        $partOfSpeechText = $partOfSpeech;
+        $partOfSpeechText[0] = strtoupper($partOfSpeechText[0]);
+
+        array_push($inlineKeyboard[0], [ 'text' => $partOfSpeechText, 'callback_data' => $partOfSpeech ]);
+    }
+
+    //Здесь возможные кнопки 'существительное', 'глагол', 'прилагательное', 'наречие', 'междометие'
+    $keyboard = [ 'inline_keyboard' => $inlineKeyboard ];
+    $reply_markup = json_encode($keyboard);
+
+    $reply = "What part of speech is your word?";
+
+    $telegram->sendMessage([ 'chat_id' => $chatId, 'text' => $reply, 'reply_markup' => $reply_markup ]);
+}
+
+function getButtonPartOfSpeechAnswer(object $telegram, int $chatId, array $inlineKeyboard, string $callbackQueryData, array $definitionsByPartOfSpeech): void
+{
+    $reply = "";
+
+    foreach ($definitionsByPartOfSpeech[$callbackQueryData] as $index => $sense)
+    {
+        $definition = $sense["definition"];
+        $usageExample = $sense["usageExample"];
+        $index++;
+
+        $reply .= "<b>$index.</b> $definition\n";
+        if (!empty($usageExample))
+        {
+            $reply .= "Usage example: <i>$usageExample</i>\n";
+        }
+        $inlineKeyboard[0][$index - 1] = [ 'text' => "$index", 'callback_data' => "$index" ];
+    }
+
+    $reply .= "\nIf you want to add a definition with a word to the list, then choose the one that you like the most.";
+
+    //Здесь разлчное количество кнопок: от 1 до 3, в виде '1', '2', '3'
+    $keyboard = [ 'inline_keyboard' => $inlineKeyboard ];
+    $reply_markup = json_encode($keyboard);
+
+    $telegram->sendMessage([ 'chat_id' => $chatId, 'text' => $reply, 'parse_mode' => "HTML", 'reply_markup' => $reply_markup ]);
+}
+
+function textEntered(object $telegram, object $db, int $chatId, string $text): void
 {
     if ($text == "/start")
     {
@@ -85,7 +110,6 @@ elseif (!empty($text))
     else
     {
         $text = strtolower($text);
-        //TODO Сделать программное ограничение на количество запростов в сутки всех пользователей
         $wordInfo = getWordInfo($text);
 
         if ($wordInfo["wordIsCorrect"])
@@ -130,13 +154,12 @@ elseif (!empty($text))
             }
 
             //Здесь 2 кнопки: 'Определение' и 'Список'
-            $inlineKeyboard = [[[ 'text' => "Definitions", 'callback_data' => "definitions" ], [ 'text' => "Add to the list", 'callback_data' => "list" ]]];
+            $inlineKeyboard = [[[ 'text' => "Definitions", 'callback_data' => "definitions" ], [ 'text' => "Add to the list", 'callback_data' => "add_to_the_list" ]]];
             $keyboard = [ 'inline_keyboard' => $inlineKeyboard ];
             $reply_markup = json_encode($keyboard);
 
             $telegram->sendMessage([ 'chat_id' => $chatId, 'text' => $reply, 'parse_mode' => "HTML", 'reply_markup' => $reply_markup ]);
 
-            //TODO Сдеалть преобразование mp3 в ogg, и передавать их как sendVoice
             if (!empty($pronunciations["audioUK"]))
             {
                 $telegram->sendAudio([ 'chat_id' => $chatId, 'audio' => $pronunciations["audioUK"], 'title' => "British accent" ]);
@@ -147,6 +170,8 @@ elseif (!empty($text))
             }
 
             //Вставляю в БД временный массив
+            unset($wordInfo["wordIsCorrect"]);
+            $wordInfo["word"] = $text;
             insertTempWordInfoToDB($db, $chatId, $wordInfo);
         }
         else
@@ -156,9 +181,54 @@ elseif (!empty($text))
         }
     }
 }
-else
+
+
+
+//Функции, работающие с БД
+function addWordToList(object $db, int $chatId, array $wordInfo): void
 {
-    $telegram->sendMessage([ 'chat_id' => $chatId, 'text' => "Отправьте текстовое сообщение." ]);
+    $word = $wordInfo["word"];
+    $wordNum = $db->rawQueryOne("SELECT word_num FROM word_list WHERE word=$word")["word_num"];
+
+    if (empty($wordNum))
+    {
+        $maxWordNum = $db->rawQueryOne("SELECT MAX(word_num) FROM word_list WHERE chat_id=$chatId")["MAX(word_num)"];
+
+        if ($maxWordNum !== null)
+        {
+            //В $wordNum номер последнего слова. Добавляю следующее слово в список
+            addWordToDBList($db, $chatId, ++$maxWordNum, $wordInfo);
+        }
+        else
+        {
+            //Номера последнего слова нет. Добавляю первое слово в списке
+            addWordToDBList($db, $chatId, 1, $wordInfo);
+        }
+
+        $reply = "Слово успешно добавлено!.";
+    }
+    else
+    {
+        $reply = "Слово уже есть в списке. Расслабься :).";
+    }
+}
+
+function addWordToDBList(object $db, int $chatId, int $WordNum, array $wordInfo): void
+{
+    $data = array(
+        "chat_id" => $chatId,
+        "word_num" => $WordNum,
+        "word" => $wordInfo["word"],
+        "transcription_uk" => $wordInfo["pronunciations"]["transcriptionUK"],
+        "transcription_us" => $wordInfo["pronunciations"]["transcriptionUS"],
+        "audio_uk" => $wordInfo["pronunciations"]["audioUK"],
+        "audio_us" => $wordInfo["pronunciations"]["audioUS"],
+        "translation" => $wordInfo["translation"],
+        /*"definition" => $definition,
+        "usage_example" => $usageExample*/
+    );
+
+    $db->insert('word_list', $data);
 }
 
 function insertTempWordInfoToDB(object $db, int $chatId, array $tempWordInfo): void
@@ -172,7 +242,7 @@ function insertTempWordInfoToDB(object $db, int $chatId, array $tempWordInfo): v
     $db->replace('users_data', $data);
 }
 
-function getTempWordInfoFromDB(object $db, int $chatId): ?array
+function getTempWordInfoFromDB(object $db, ): ?array
 {
     $db->where('chat_id', $chatId);
 

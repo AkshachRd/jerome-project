@@ -1,18 +1,31 @@
 <?php
-require_once 'vendor/autoload.php';
-use \Dejurin\GoogleTranslateForFree;
+require_once 'MysqliDb.php';
 
-echo getTranslation('Father');
+$db = new MysqliDb ('localhost', 'root', 'BJx@3~rQ_N98%tn', 'telegram_bot_db');
 
-function getTranslation(string $word): ?string
+function addWordToList(object $db, int $chatId, string $word): void
 {
-    $source = 'en';
-    $target = 'ru';
-    $attempts = 5;
+    $wordNum = $db->rawQueryOne("SELECT MAX(word_num) FROM word_list WHERE chat_id=$chatId")["MAX(word_num)"];
 
-    $tr = new GoogleTranslateForFree();
-    $result = $tr->translate($source, $target, $word, $attempts);
-    $result[0] = strtoupper($result[0]);
-
-    return $result;
+    if ($wordNum !== null)
+    {
+        //В $wordNum номер последнего слова. Добавляю следующее слово в список
+        addWordToDBList($db, $chatId, ++$wordNum, $word);
+    }
+    else
+    {
+        //Номера последнего слова нет. Добавляю первое слово в списке
+        addWordToDBList($db, $chatId, 1, $word);
+    }
 }
+
+function addWordToDBList(object $db, int $chatId, int $wordNum, string $word): void
+{
+    $data = array(
+        "chat_id" => $chatId,
+        "word_num" => $wordNum,
+        "word" => $word
+    );
+    $db->insert('word_list', $data);
+}
+
