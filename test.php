@@ -3,9 +3,15 @@ require_once 'config.php';
 
 $link = mysqli_connect(DB_HOST, DB_USERNAME, DB_PASSWORD, DB_NAME);
 
-$chatId = 40176345;
-$wordNum = 2;
-
-$sql = 'SELECT chat_id FROM users_data WHERE chat_id = ' . $chatId;
+$chatId = 401763451;
+$sql = 'SELECT MAX(word_num) FROM word_list WHERE chat_id = ' . $chatId;
 $sqlResult = mysqli_query($link, $sql);
-var_dump(mysqli_fetch_array($sqlResult));
+
+$maxWordNum = (int)mysqli_fetch_array($sqlResult)["MAX(word_num)"];
+echo mysqli_error($link);
+
+var_dump($maxWordNum);
+
+$sql = 'SELECT MAX(word_num) FROM word_list WHERE chat_id = ' . $chatId;
+$sqlResult = mysqli_query($link, $sql);
+$maxWordNum = (int)mysqli_fetch_array($sqlResult)["word_num"];
