@@ -202,6 +202,10 @@ function addWordToList(object $telegram, object $db, int $chatId, array $wordInf
         $db->where('chat_id', $chatId);
         $maxWordNum = end($db->get('word_list', null, 'word_num'))["word_num"];
         //$maxWordNum = $db->rawQuery('SELECT MAX(word_num) FROM word_list WHERE chat_id=' . "$chatId")["MAX(word_num)"];
+        if ($db->getLastErrno() === 0)
+            $telegram->sendMessage([ 'chat_id' => $chatId, 'text' => 'Update succesfull' ]);
+        else
+            $telegram->sendMessage([ 'chat_id' => $chatId, 'text' => 'Update failed. Error: '. $db->getLastError() ]);
 
         if (empty($maxWordNum))
         {
