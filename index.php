@@ -189,7 +189,7 @@ function textEntered(object $telegram, object $db, int $chatId, string $text): v
 function addWordToList(object $telegram, object $db, int $chatId, array $wordInfo): void
 {
     $word = $wordInfo["word"];
-    $wordNum = $db->rawQueryOne("SELECT word_num FROM word_list WHERE word=$word")["word_num"];
+    $wordNum = $db->rawQueryOne("SELECT word_num FROM word_list WHERE word=$word");
 
     if (empty($wordNum))
     {
