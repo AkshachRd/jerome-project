@@ -179,7 +179,7 @@ function getResponseFromLearning(object $telegram, mysqli $link, int $chatId, st
             $telegram->sendMessage([ 'chat_id' => $chatId, 'text' => $reply, 'parse_mode' => "HTML" ]);
         }
 
-        sendAudio($telegram, $chatId, $wordInfo);
+        //sendAudio($telegram, $chatId, $wordInfo);
     }
     else
     {
@@ -438,7 +438,7 @@ function learnWords(object $telegram, mysqli $link, int $chatId): void
         elseif (!empty($wordInfo["definition"]))
         {
             $reply = $wordInfo["definition"];
-            $telegram->sendMessage([ 'chat_id' => $chatId, 'text' => $reply, 'parse_mode' => "HTML" ]);
+            $telegram->sendMessage([ 'chat_id' => $chatId, 'text' => $reply ]);
         }
         elseif (!empty($wordInfo["usage_example"]))
         {
@@ -446,7 +446,7 @@ function learnWords(object $telegram, mysqli $link, int $chatId): void
             $telegram->sendMessage([ 'chat_id' => $chatId, 'text' => $reply, 'parse_mode' => "HTML" ]);
         }
 
-        sendAudio($telegram, $chatId, $wordInfo);
+        //sendAudio($telegram, $chatId, $wordInfo);
     }
     else
     {
