@@ -49,7 +49,7 @@ function getButtonAnswer(object $telegram, object $db, array $callbackQuery): vo
     }
     elseif ($callbackQueryData === 'add_to_the_list')
     {
-        addWordToList($db, $chatId, $callbackQuery);
+        addWordToList($telegram, $db, $chatId, $callbackQuery);
     }
 }
 
@@ -185,7 +185,7 @@ function textEntered(object $telegram, object $db, int $chatId, string $text): v
 
 
 //Функции, работающие с БД
-function addWordToList(object $db, int $chatId, array $wordInfo): void
+function addWordToList(object $telegram, object $db, int $chatId, array $wordInfo): void
 {
     $word = $wordInfo["word"];
     $wordNum = $db->rawQueryOne("SELECT word_num FROM word_list WHERE word=$word")["word_num"];
@@ -211,6 +211,8 @@ function addWordToList(object $db, int $chatId, array $wordInfo): void
     {
         $reply = "Слово уже есть в списке. Расслабься :).";
     }
+
+    $telegram->
 }
 
 function addWordToDBList(object $db, int $chatId, int $WordNum, array $wordInfo): void
