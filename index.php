@@ -190,10 +190,17 @@ function addWordToList(object $telegram, mysqli $link, int $chatId, array $wordI
 {
     $word = $wordInfo["word"];
 
+    $reply = $word;
+    $telegram->sendMessage([ 'chat_id' => $chatId, 'text' => $reply ]);
+
     $sql = 'SELECT word_num FROM word_list WHERE chat_id = ' . $chatId . ' AND word = "' . $word . '"';
     $sqlResult = mysqli_query($link, $sql);
 
     $wordNum = (int)mysqli_fetch_array($sqlResult)["word_num"];
+
+    $reply = mysqli_fetch_array($sqlResult)[0];
+    $telegram->sendMessage([ 'chat_id' => $chatId, 'text' => $reply ]);
+
     $reply = $wordNum;
     $telegram->sendMessage([ 'chat_id' => $chatId, 'text' => $reply ]);
 
