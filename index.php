@@ -194,6 +194,7 @@ function textEntered(object $telegram, mysqli $link, string $tempWordInfoFile, i
 function addWordToList(object $telegram, mysqli $link, int $chatId, array $wordInfo): void
 {
     $word = $wordInfo["word"];
+    $telegram->sendMessage([ 'chat_id' => $chatId, 'text' => $word ]);
 
     $sql = 'SELECT word_num FROM word_list WHERE chat_id = ' . $chatId . ' AND word = "' . $word . '"';
     $sqlResult = mysqli_query($link, $sql);
@@ -206,11 +207,6 @@ function addWordToList(object $telegram, mysqli $link, int $chatId, array $wordI
         $sqlResult = mysqli_query($link, $sql);
 
         $maxWordNum = (int)mysqli_fetch_array($sqlResult)["MAX(word_num)"];
-
-        if (empty($maxWordNum))
-        {
-            $telegram->sendMessage([ 'chat_id' => $chatId, 'text' => "СУКА НУЛЛ" ]);
-        }
 
         if (!empty($maxWordNum))
         {
