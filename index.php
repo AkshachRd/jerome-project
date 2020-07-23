@@ -197,7 +197,7 @@ function addWordToList(object $telegram, mysqli $link, int $chatId, array $wordI
 
     $sql = 'SELECT word_num FROM word_list WHERE chat_id = ' . $chatId . ' AND word = "' . $word . '"';
     $sqlResult = mysqli_query($link, $sql);
-    $telegram->sendMessage([ 'chat_id' => $chatId, 'text' => mysqli_error($link) ]);
+
     $wordNum = (int)mysqli_fetch_array($sqlResult)["word_num"];
 
     if (empty($wordNum))
@@ -211,6 +211,7 @@ function addWordToList(object $telegram, mysqli $link, int $chatId, array $wordI
         {
             //В $wordNum номер последнего слова. Добавляю следующее слово в список
             addWordToDBList($link, $chatId, $maxWordNum + 1, $wordInfo);
+            $telegram->sendMessage([ 'chat_id' => $chatId, 'text' => 'Я тута' ]);
         }
         else
         {
