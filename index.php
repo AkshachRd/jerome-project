@@ -79,7 +79,7 @@ function getButtonAnswer(object $telegram, mysqli $link, string $tempWordInfoFil
 
         $whichWordsToLearn = explode(' ', mysqli_fetch_array($sqlResult)["which_words_to_learn"]);
 
-        if (!empty($whichWordsToLearn[0]))
+        if (!empty($whichWordsToLearn[1]))
         {
             $currentWordNum = array_shift($whichWordsToLearn);
 

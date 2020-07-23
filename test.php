@@ -9,5 +9,5 @@ $sql = 'SELECT which_words_to_learn FROM users_data WHERE chat_id = ' . $chatId;
 $sqlResult = mysqli_query($link, $sql);
 
 $str = mysqli_fetch_array($sqlResult)["which_words_to_learn"];
-$whichWordsToLearn = explode(' ', $str);
+$whichWordsToLearn = explode(' ',  ' 1 2 3 4 5');
 var_dump($whichWordsToLearn);
