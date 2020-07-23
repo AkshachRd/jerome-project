@@ -13,7 +13,6 @@ $result = $telegram -> getWebhookUpdates(); //Передаем в перемен
 $text = $result["message"]["text"]; //Текст сообщения
 $chatId = $result["message"]["chat"]["id"]; //Уникальный идентификатор пользователя
 $name = $result["message"]["from"]["username"]; //Юзернейм пользователя
-$keyboard = [["Учить слова"]]; //Клавиатура
 $callbackQuery = $result["callback_query"]; //Запрос, возвращенный кнопкой
 
 $tempWordInfoFile = 'tempWordInfoFile.txt'; //Временный файл для хранения массива с информацией о слове
@@ -30,9 +29,6 @@ if (!empty($callbackQuery))
 }
 elseif (!empty($text))
 {
-    $replyMarkup = $telegram->replyKeyboardMarkup([ 'keyboard' => $keyboard, 'resize_keyboard' => true ]);
-    $telegram->sendMessage([ 'chat_id' => $chatId, 'reply_markup' => $replyMarkup ]);
-
     textEntered($telegram, $link, $tempWordInfoFile, $chatId, $text);
 }
 else
