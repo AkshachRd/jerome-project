@@ -1,5 +1,5 @@
 <?php
-require_once 'MysqliDb.php'; //Библиотека для подключения к БД
+
 require_once 'config.php'; //Константы
 require_once 'getWordInfo.php'; //Функции для работы с API
 require_once 'vendor/autoload.php';

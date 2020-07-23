@@ -1,5 +1,4 @@
 <?php
-require_once 'MysqliDb.php';
 require_once 'config.php';
 require_once 'vendor/autoload.php';
 use Telegram\Bot\Api;
