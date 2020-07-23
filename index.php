@@ -203,7 +203,7 @@ function addWordToList(object $telegram, object $db, int $chatId, array $wordInf
             $telegram->sendMessage([ 'chat_id' => $chatId, 'text' => "СУКА НУЛЛ" ]);
         }
 
-        if ($maxWordNum != null)
+        if (!empty($maxWordNum))
         {
             //В $wordNum номер последнего слова. Добавляю следующее слово в список
             addWordToDBList($db, $chatId, $maxWordNum + 1, $wordInfo);
