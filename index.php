@@ -284,7 +284,7 @@ function addDefinitionToList(object $telegram, int $chatId, mysqli $link, string
 
 function addWordToDBList(mysqli $link, int $chatId, int $wordNum, array $wordInfo): void
 {
-    $sql = 'INSERT word_list(chat_id, word_num, word, transcription_uk, transcription_us, translation) VALUES (' . $chatId . ', ' . $wordNum . ', "' . $wordInfo["word"] . '", "' . utf8_encode($wordInfo["pronunciations"]["transcriptionUK"]) . '", "' . utf8_encode($wordInfo["pronunciations"]["transcriptionUS"]) . '", "' . utf8_encode($wordInfo["translation"]) . '")';
+    $sql = 'INSERT word_list(chat_id, word_num, word, transcription_uk, transcription_us, translation) VALUES (' . $chatId . ', ' . $wordNum . ', "' . $wordInfo["word"] . '", "' . mb_detect_encoding($wordInfo["pronunciations"]["transcriptionUK"]) . '", "' . utf8_encode($wordInfo["pronunciations"]["transcriptionUS"]) . '", "' . utf8_encode($wordInfo["translation"]) . '")';
 
     mysqli_query($link, $sql);
 }
