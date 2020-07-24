@@ -59,11 +59,11 @@ function getButtonAnswer(object $telegram, mysqli $link, string $tempWordInfoFil
     {
         getButtonDefinitionsAnswer($telegram, $chatId, $inlineKeyboard, $definitionsByPartOfSpeech);
     }
-    elseif (in_array($callbackQueryData , [PART_OF_SPEECH_NOUN, PART_OF_SPEECH_VERB, PART_OF_SPEECH_ADJECTIVE, PART_OF_SPEECH_ADVERB, PART_OF_SPEECH_INTERJECTION]))
+    elseif (in_array($callbackQueryData , [PART_OF_SPEECH_NOUN, PART_OF_SPEECH_VERB, PART_OF_SPEECH_ADJECTIVE, PART_OF_SPEECH_ADVERB, PART_OF_SPEECH_INTERJECTION, PART_OF_SPEECH_PRONOUN, PART_OF_SPEECH_CONJUNCTION]))
     {
         getButtonPartOfSpeechAnswer($telegram, $chatId, $inlineKeyboard, $tempWordInfoFile, $callbackQueryData, $tempWordInfo);
     }
-    elseif (in_array($callbackQueryData , [FIRST_DEFINITION, SECOND_DEFINITION, THIRD_DEFINITION]))
+    elseif (in_array($callbackQueryData , [DEFINITION_FIRST, DEFINITION_SECOND, DEFINITION_THIRD]))
     {
         addDefinitionToList($telegram, $chatId, $link, $callbackQueryData, $tempWordInfo);
     }
@@ -71,7 +71,7 @@ function getButtonAnswer(object $telegram, mysqli $link, string $tempWordInfoFil
     {
         addWordToList($telegram, $link, $chatId, $tempWordInfo);
     }
-    elseif (in_array($callbackQueryData , [GOOD_MARK, BAD_MARK]))
+    elseif (in_array($callbackQueryData , [MARK_GOOD, MARK_BAD]))
     {
         getResponseFromLearning($telegram, $link, $chatId, $callbackQueryData);
     }

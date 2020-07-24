@@ -17,10 +17,12 @@ const PART_OF_SPEECH_VERB = 'verb';
 const PART_OF_SPEECH_ADJECTIVE = 'adjective';
 const PART_OF_SPEECH_ADVERB = 'adverb';
 const PART_OF_SPEECH_INTERJECTION = 'interjection';
+const PART_OF_SPEECH_PRONOUN = 'pronoun';
+const PART_OF_SPEECH_CONJUNCTION = 'conjunction';
 //Which definition to take
-const FIRST_DEFINITION = 1;
-const SECOND_DEFINITION = 2;
-const THIRD_DEFINITION = 3;
+const DEFINITION_FIRST = 1;
+const DEFINITION_SECOND = 2;
+const DEFINITION_THIRD = 3;
 //Mark
-const GOOD_MARK = 'good';
-const BAD_MARK = 'bad';
+const MARK_GOOD = 'good';
+const MARK_BAD= 'bad';
