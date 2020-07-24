@@ -301,12 +301,12 @@ function textEntered(object $telegram, mysqli $link, string $tempWordInfoFile, i
         $sql = 'INSERT users_data(chat_id) VALUES (' . $chatId . ')'; //Помещаю пользователя в БД
         mysqli_query($link, $sql);
 
-        $reply = "Добро пожаловать в бота!\nЭтот бот призван помочь тебе выучить ОнГлИйСкИе слова. Ты можешь создать свой список слов и повторять их, когда тебе будет удобно. Бот будет присылать тебе оповещения ";
+        $reply = "Добро пожаловать в бота!\nЭтот бот призван помочь тебе выучить ОнГлИйСкИе слова. Ты можешь создать свой список слов и повторять их, когда тебе будет удобно. Бот будет присылать тебе оповещения каждый день в 18:30 по Москве с предложением повторять слова. Удачи!";
         $keyboard = [["Learn words"]]; //Клавиатура
         $reply_markup = $telegram->replyKeyboardMarkup([ 'keyboard' => $keyboard, 'resize_keyboard' => true, 'one_time_keyboard' => false ]);
         $telegram->sendMessage([ 'chat_id' => $chatId, 'text' => $reply, 'reply_markup' => $reply_markup ]);
     }
-    elseif ($text == "Учить слова")
+    elseif ($text == "Learn words")
     {
         learnWords($telegram, $link, $chatId);
     }
@@ -420,6 +420,8 @@ function learnWords(object $telegram, mysqli $link, int $chatId): void
         mysqli_query($link, $sql);
 
         $wordInfo = getWordInfoFromDB($link, $chatId, 1);
+
+        $telegram->sendMessage([ 'chat_id' => $chatId, 'text' => json_encode($wordInfo) ]);
 
         //Здесь 2 кнопки: 'Понел' и 'Непонел'
         $inlineKeyboard = [[[ 'text' => "Хорошо", 'callback_data' => "good" ], [ 'text' => "Плохо", 'callback_data' => "bad" ]]];
