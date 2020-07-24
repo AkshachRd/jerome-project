@@ -123,7 +123,9 @@ function getButtonPartOfSpeechAnswer(object $telegram, int $chatId, array $inlin
 
     $telegram->sendMessage([ 'chat_id' => $chatId, 'text' => $reply, 'parse_mode' => "HTML", 'reply_markup' => $replyMarkup ]);
 
-    $definitionsByPartOfSpeech = array_intersect($definitionsByPartOfSpeech, [$callbackQueryData => $definitionsByPartOfSpeech[$callbackQueryData]]);
+    $definitionsByPartOfSpeech = array(
+        "$callbackQueryData" => $definitionsByPartOfSpeech[$callbackQueryData]
+    );
     $tempWordInfo["definitionsByPartOfSpeech"] = $definitionsByPartOfSpeech;
 
     //Вставляю в файл временный массив
@@ -140,7 +142,7 @@ function getResponseFromLearning(object $telegram, mysqli $link, int $chatId, st
     $currentWordNum = $whichWordsToLearn[0];
     $whichWordsToLearn = str_replace($whichWordsToLearn[0], '', $whichWordsToLearn);
 
-    if ($callbackQueryData === BAD_MARK)
+    if ($callbackQueryData === MARK_BAD)
     {
         $whichWordsToLearn .= $currentWordNum;
     }
@@ -268,7 +270,7 @@ function addDefinitionToList(object $telegram, int $chatId, mysqli $link, string
             }
         }
 
-        $sql = 'UPDATE word_list SET definition = "' . end($definitionsByPartOfSpeech)[$callbackQueryData - 1]["definition"] . '", usage_example = "' . end($definitionsByPartOfSpeech)[$callbackQueryData - 1]["usageExample"] . '" WHERE chat_id = ' . $chatId . ' AND word = "' . $word . '"';
+        $sql = 'UPDATE word_list SET definition = "' . reset($definitionsByPartOfSpeech)[$callbackQueryData - 1]["definition"] . '", usage_example = "' . end($definitionsByPartOfSpeech)[$callbackQueryData - 1]["usageExample"] . '" WHERE chat_id = ' . $chatId . ' AND word = "' . $word . '"';
         mysqli_query($link, $sql);
 
         $reply = "Определение успешно добавлено!";
