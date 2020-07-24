@@ -4,7 +4,7 @@ require_once 'vendor/autoload.php';
 use \Dejurin\GoogleTranslateForFree;
 
 //Функция возвращает массив с информацией о слове
-function getWordInfo(string $word): ?array
+function getWordInfo(string $word): array
 {
     $originalWord = $word;
     //Заменяю пробел на %20, чтобы запрос фраз проходил корректно

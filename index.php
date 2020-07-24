@@ -284,7 +284,7 @@ function addDefinitionToList(object $telegram, int $chatId, mysqli $link, string
 
 function addWordToDBList(mysqli $link, int $chatId, int $wordNum, array $wordInfo): void
 {
-    $sql = 'INSERT word_list(chat_id, word_num, word, transcription_uk, transcription_us, translation) VALUES (' . $chatId . ', ' . $wordNum . ', "' . $wordInfo["word"] . '", "' . mb_detect_encoding($wordInfo["pronunciations"]["transcriptionUK"]) . '", "' . utf8_encode($wordInfo["pronunciations"]["transcriptionUS"]) . '", "' . utf8_encode($wordInfo["translation"]) . '")';
+    $sql = 'INSERT word_list(chat_id, word_num, word, transcription_uk, transcription_us, translation) VALUES (' . $chatId . ', ' . $wordNum . ', "' . $wordInfo["word"] . '", "' . $wordInfo["pronunciations"]["transcriptionUK"] . '", "' . $wordInfo["pronunciations"]["transcriptionUS"] . '", "' . $wordInfo["translation"] . '")';
 
     mysqli_query($link, $sql);
 }
@@ -345,7 +345,7 @@ function printWordAndTranscription(object $telegram, int $chatId, string $replyM
 
     if (!empty($pronunciations["transcriptionUK"]))
     {
-        $transcriptionUK = "\xF0\x9F\x87\xAC\xF0\x9F\x87\xA7:" . $pronunciations["transcriptionUK"];
+        $transcriptionUK = EMOJI_UK_FLAG . ":" . $pronunciations["transcriptionUK"];
     }
     else
     {
@@ -353,7 +353,7 @@ function printWordAndTranscription(object $telegram, int $chatId, string $replyM
     }
     if (!empty($pronunciations["transcriptionUS"]))
     {
-        $transcriptionUS = "\xF0\x9F\x87\xBA\xF0\x9F\x87\xB8:" . $pronunciations["transcriptionUS"];
+        $transcriptionUS = EMOJI_US_FLAG . ":" . $pronunciations["transcriptionUS"];
     }
     else
     {
@@ -374,7 +374,7 @@ function printWordAndTranscription(object $telegram, int $chatId, string $replyM
     }
     else
     {
-        $reply = "<b>$word</b>\n$transcriptionUK   $transcriptionUS\n<b>$translation</b>";
+        $reply = "<b>$word</b>\n" . mb_detect_encoding($transcriptionUK) . "   $transcriptionUS\n<b>$translation</b>";
     }
 
     $telegram->sendMessage([ 'chat_id' => $chatId, 'text' => $reply, 'parse_mode' => "HTML", 'reply_markup' => $replyMarkup ]);
@@ -452,7 +452,7 @@ function learnWords(object $telegram, mysqli $link, int $chatId): void
     }
 }
 
-function getWordInfoFromDB(mysqli $link, int $chatId, int $wordNum): ?array
+function getWordInfoFromDB(mysqli $link, int $chatId, int $wordNum): array
 {
     $sql = 'SELECT word, transcription_uk, transcription_us, translation, definition, usage_example FROM word_list WHERE chat_id = ' . $chatId . ' AND word_num = ' . $wordNum;
     $sqlResult = mysqli_fetch_array(mysqli_query($link, $sql));
