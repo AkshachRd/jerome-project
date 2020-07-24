@@ -178,8 +178,6 @@ function getResponseFromLearning(object $telegram, mysqli $link, int $chatId, st
             $reply = "Usage example: <i>" . $wordInfo["usage_example"] . "</i>";
             $telegram->sendMessage([ 'chat_id' => $chatId, 'text' => $reply, 'parse_mode' => "HTML" ]);
         }
-
-        //sendAudio($telegram, $chatId, $wordInfo);
     }
     else
     {
@@ -286,7 +284,7 @@ function addDefinitionToList(object $telegram, int $chatId, mysqli $link, string
 
 function addWordToDBList(mysqli $link, int $chatId, int $wordNum, array $wordInfo): void
 {
-    $sql = 'INSERT word_list(chat_id, word_num, word, transcription_uk, transcription_us, audio_uk, audio_us, translation) VALUES (' . $chatId . ', ' . $wordNum . ', "' . $wordInfo["word"] . '", "' . $wordInfo["pronunciations"]["transcriptionUK"] . '", "' . $wordInfo["pronunciations"]["transcriptionUS"] . '", "' . $wordInfo["pronunciations"]["audioUK"] . '", "' . $wordInfo["pronunciations"]["audioUS"] . '", "' . $wordInfo["translation"] . '")';
+    $sql = 'INSERT word_list(chat_id, word_num, word, transcription_uk, transcription_us, translation) VALUES (' . $chatId . ', ' . $wordNum . ', "' . $wordInfo["word"] . '", "' . utf8_encode($wordInfo["pronunciations"]["transcriptionUK"]) . '", "' . utf8_encode($wordInfo["pronunciations"]["transcriptionUS"]) . '", "' . utf8_encode($wordInfo["translation"]) . '")';
 
     mysqli_query($link, $sql);
 }
@@ -445,8 +443,6 @@ function learnWords(object $telegram, mysqli $link, int $chatId): void
             $reply = "Usage example: <i>" . $wordInfo["usage_example"] . "</i>";
             $telegram->sendMessage([ 'chat_id' => $chatId, 'text' => $reply, 'parse_mode' => "HTML" ]);
         }
-
-        //sendAudio($telegram, $chatId, $wordInfo);
     }
     else
     {
@@ -458,16 +454,14 @@ function learnWords(object $telegram, mysqli $link, int $chatId): void
 
 function getWordInfoFromDB(mysqli $link, int $chatId, int $wordNum): ?array
 {
-    $sql = 'SELECT word, transcription_uk, transcription_us, audio_uk, audio_us, translation, definition, usage_example FROM word_list WHERE chat_id = ' . $chatId . ' AND word_num = ' . $wordNum;
+    $sql = 'SELECT word, transcription_uk, transcription_us, translation, definition, usage_example FROM word_list WHERE chat_id = ' . $chatId . ' AND word_num = ' . $wordNum;
     $sqlResult = mysqli_fetch_array(mysqli_query($link, $sql));
 
     return array(
         "word" => $sqlResult["word"],
         "pronunciation" => array(
             "transcriptionUK" => $sqlResult["transcription_uk"],
-            "transcriptionUS" => $sqlResult["transcription_us"],
-            "audioUK" => $sqlResult["audio_uk"],
-            "audioUS" => $sqlResult["audio_us"]
+            "transcriptionUS" => $sqlResult["transcription_us"]
         ),
         "definition" => $sqlResult["definition"],
         "usageExample" => $sqlResult["usage_example"],
