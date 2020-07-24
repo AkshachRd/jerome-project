@@ -302,7 +302,9 @@ function textEntered(object $telegram, mysqli $link, string $tempWordInfoFile, i
         mysqli_query($link, $sql);
 
         $reply = "Добро пожаловать в бота!\nЭтот бот призван помочь тебе выучить ОнГлИйСкИе слова. Ты можешь создать свой список слов и повторять их, когда тебе будет удобно. Бот будет присылать тебе оповещения ";
-        $telegram->sendMessage([ 'chat_id' => $chatId, 'text' => $reply ]);
+        $keyboard = [["Learn words"]]; //Клавиатура
+        $reply_markup = $telegram->replyKeyboardMarkup([ 'keyboard' => $keyboard, 'resize_keyboard' => true, 'one_time_keyboard' => false ]);
+        $telegram->sendMessage([ 'chat_id' => $chatId, 'text' => $reply, 'reply_markup' => $reply_markup ]);
     }
     elseif ($text == "Учить слова")
     {
