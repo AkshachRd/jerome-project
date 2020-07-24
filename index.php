@@ -137,20 +137,19 @@ function getResponseFromLearning(object $telegram, mysqli $link, int $chatId, st
     $sqlResult = mysqli_query($link, $sql);
 
     $whichWordsToLearn = mysqli_fetch_array($sqlResult)["which_words_to_learn"];
+    $currentWordNum = $whichWordsToLearn[0];
+    $whichWordsToLearn = str_replace($whichWordsToLearn[0], '', $whichWordsToLearn);
+
+    if ($callbackQueryData === BAD_MARK)
+    {
+        $whichWordsToLearn .= $currentWordNum;
+    }
+
+    $sql = 'UPDATE users_data SET which_words_to_learn = "' . $whichWordsToLearn . '" WHERE chat_id = ' . $chatId;
+    mysqli_query($link, $sql);
 
     if (!empty($whichWordsToLearn))
     {
-        $currentWordNum = $whichWordsToLearn[0];
-        $whichWordsToLearn = str_replace($whichWordsToLearn[0], '', $whichWordsToLearn);
-
-        if ($callbackQueryData === BAD_MARK)
-        {
-            $whichWordsToLearn .= $currentWordNum;
-        }
-
-        $sql = 'UPDATE users_data SET which_words_to_learn = "' . $whichWordsToLearn . '" WHERE chat_id = ' . $chatId;
-        mysqli_query($link, $sql);
-
         $nextWordNum = $whichWordsToLearn[0];
 
         $wordInfo = getWordInfoFromDB($link, $chatId, $nextWordNum);
