@@ -32,3 +32,5 @@ else
 {
     $telegram->sendMessage([ 'chat_id' => $chatId, 'text' => "Отправьте текстовое сообщение." ]);
 }
+
+mysqli_close($link);
