@@ -421,7 +421,7 @@ function learnWords(object $telegram, mysqli $link, int $chatId): void
 
         $wordInfo = getWordInfoFromDB($link, $chatId, 1);
 
-        $telegram->sendMessage([ 'chat_id' => $chatId, 'text' => json_encode($wordInfo) ]);
+        $telegram->sendMessage([ 'chat_id' => $chatId, 'text' => $wordInfo["pronunciation"]["transcriptionUK"] ]);
 
         //Здесь 2 кнопки: 'Понел' и 'Непонел'
         $inlineKeyboard = [[[ 'text' => "Хорошо", 'callback_data' => "good" ], [ 'text' => "Плохо", 'callback_data' => "bad" ]]];
