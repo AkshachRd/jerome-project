@@ -1,7 +1,6 @@
 <?php
-
 require_once 'config.php'; //Константы
-require_once 'getWordInfo.php'; //Функции для работы с API
+require_once 'requestData.php'; //Функции для работы с API
 require_once 'vendor/autoload.php';
 use Telegram\Bot\Api;
 
@@ -419,9 +418,6 @@ function learnWords(object $telegram, mysqli $link, int $chatId): void
         mysqli_query($link, $sql);
 
         $wordInfo = getWordInfoFromDB($link, $chatId, 1);
-
-        file_put_contents('test.txt', "");
-        file_put_contents('test.txt', serialize($wordInfo));
 
         //Здесь 2 кнопки: 'Понел' и 'Непонел'
         $inlineKeyboard = [[[ 'text' => "Хорошо", 'callback_data' => "good" ], [ 'text' => "Плохо", 'callback_data' => "bad" ]]];

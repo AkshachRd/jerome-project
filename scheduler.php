@@ -10,12 +10,13 @@ $inlineKeyboard = [[[ 'text' => "Learn words", 'callback_data' => "learn" ]]];
 $keyboard = [ 'inline_keyboard' => $inlineKeyboard ];
 $reply_markup = json_encode($keyboard);
 
-$db = new MysqliDb(DB_HOST, DB_USERNAME, DB_PASSWORD, DB_NAME);
+$chatId = 401763451;
 
-$chatIds = $db->get('users_data', null, 'chat_id');
-foreach ($chatIds as $chatId)
-{
-    $telegram->sendMessage([ 'chat_id' => $chatId, 'text' => $reply, 'reply_markup' => $reply_markup ]);
-}
+$telegram->sendMessage([ 'chat_id' => $chatId, 'text' => $reply, 'reply_markup' => $reply_markup ]);
+
+//foreach ($chatIds as $chatId)
+//{
+//    $telegram->sendMessage([ 'chat_id' => $chatId, 'text' => $reply, 'reply_markup' => $reply_markup ]);
+//}
 
 
