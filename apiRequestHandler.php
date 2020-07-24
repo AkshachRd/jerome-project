@@ -11,6 +11,37 @@ function getWordInfo(string $word): array
     $word = str_replace(' ', '%20', $word);
 
     //Lingua Robot API
+    $response = getAPIAnswer($word);
+    $response = json_decode($response, true);
+
+    $entries = $response["entries"][0];
+    //Если слово существует, то получить данные
+    if (!empty($entries))
+    {
+        $originalWord[0] = strtoupper($originalWord[0]);
+        $pronunciations = getPronunciations($entries);
+        $definitionsByPartOfSpeech = getDefinitionsByPartOfSpeech($entries);
+        $translation = getTranslation($entries["entry"]);
+        $translation[0] = strtoupper($translation[0]);
+
+        return array(
+            "wordIsCorrect" => true,
+            "word" => $originalWord,
+            "pronunciations" => $pronunciations,
+            "definitionsByPartOfSpeech" => $definitionsByPartOfSpeech,
+            "translation" => $translation
+        );
+    }
+    else
+    {
+        return array(
+            "wordIsCorrect" => false
+        );
+    }
+}
+
+function getAPIAnswer(string $word): string
+{
     $curl = curl_init();
 
     curl_setopt_array($curl, array(
@@ -29,43 +60,10 @@ function getWordInfo(string $word): array
     ));
 
     $response = curl_exec($curl);
-    $curlError = curl_error($curl);
 
     curl_close($curl);
 
-    if ($curlError)
-    {
-        echo "cURL Error #:" . $curlError;
-    }
-    else
-    {
-        $response = json_decode($response, true);
-
-        $entries = $response["entries"][0];
-        //Если слово существует, то получить данные
-        if (!empty($entries))
-        {
-            $originalWord[0] = strtoupper($originalWord[0]);
-            $pronunciations = getPronunciations($entries);
-            $definitionsByPartOfSpeech = getDefinitionsByPartOfSpeech($entries);
-            $translation = getTranslation($entries["entry"]);
-            $translation[0] = strtoupper($translation[0]);
-
-            return array(
-                "wordIsCorrect" => true,
-                "word" => $originalWord,
-                "pronunciations" => $pronunciations,
-                "definitionsByPartOfSpeech" => $definitionsByPartOfSpeech,
-                "translation" => $translation
-            );
-        }
-        else
-        {
-            return array(
-                "wordIsCorrect" => false
-            );
-        }
-    }
+    return $response;
 }
 
 //Функция возвращает перевод слова
