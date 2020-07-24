@@ -166,17 +166,17 @@ function getResponseFromLearning(object $telegram, mysqli $link, int $chatId, st
         //Отправляю определение
         if (!empty($wordInfo["definition"]) && !empty($wordInfo["usageExample"]))
         {
-            $reply = $wordInfo["definition"] . "\nUsage example: <i>" . $wordInfo["usageExample"] . "</i>";
+            $reply = "<b>Definition:</b> " . $wordInfo["definition"] . "\n<b>Usage example:</b> <i>" . $wordInfo["usageExample"] . "</i>";
             $telegram->sendMessage([ 'chat_id' => $chatId, 'text' => $reply, 'parse_mode' => "HTML" ]);
         }
         elseif (!empty($wordInfo["definition"]))
         {
-            $reply = $wordInfo["definition"];
+            $reply = "<b>Definition:</b> " . $wordInfo["definition"];
             $telegram->sendMessage([ 'chat_id' => $chatId, 'text' => $reply, 'parse_mode' => "HTML" ]);
         }
         elseif (!empty($wordInfo["usageExample"]))
         {
-            $reply = "Usage example: <i>" . $wordInfo["usageExample"] . "</i>";
+            $reply = "<b>Usage example:</b> <i>" . $wordInfo["usageExample"] . "</i>";
             $telegram->sendMessage([ 'chat_id' => $chatId, 'text' => $reply, 'parse_mode' => "HTML" ]);
         }
     }
