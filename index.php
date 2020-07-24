@@ -420,6 +420,9 @@ function learnWords(object $telegram, mysqli $link, int $chatId): void
 
         $wordInfo = getWordInfoFromDB($link, $chatId, 1);
 
+        file_put_contents('test.txt', "");
+        file_put_contents('test.txt', serialize($wordInfo));
+
         //Здесь 2 кнопки: 'Понел' и 'Непонел'
         $inlineKeyboard = [[[ 'text' => "Хорошо", 'callback_data' => "good" ], [ 'text' => "Плохо", 'callback_data' => "bad" ]]];
         $keyboard = [ 'inline_keyboard' => $inlineKeyboard ];
