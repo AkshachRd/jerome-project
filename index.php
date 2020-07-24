@@ -431,9 +431,9 @@ function learnWords(object $telegram, mysqli $link, int $chatId): void
         printWordAndTranscription($telegram, $chatId, $replyMarkup, $wordInfo);
 
         //Отправляю определение
-        if (!empty($wordInfo["definition"]) && !empty($wordInfo["usage_example"]))
+        if (!empty($wordInfo["definition"]) && !empty($wordInfo["usageExample"]))
         {
-            $reply = $wordInfo["definition"] . "\nUsage example: <i>" . $wordInfo["usage_example"] . "</i>";
+            $reply = $wordInfo["definition"] . "\nUsage example: <i>" . $wordInfo["usageExample"] . "</i>";
             $telegram->sendMessage([ 'chat_id' => $chatId, 'text' => $reply, 'parse_mode' => "HTML" ]);
         }
         elseif (!empty($wordInfo["definition"]))
@@ -441,9 +441,9 @@ function learnWords(object $telegram, mysqli $link, int $chatId): void
             $reply = $wordInfo["definition"];
             $telegram->sendMessage([ 'chat_id' => $chatId, 'text' => $reply ]);
         }
-        elseif (!empty($wordInfo["usage_example"]))
+        elseif (!empty($wordInfo["usageExample"]))
         {
-            $reply = "Usage example: <i>" . $wordInfo["usage_example"] . "</i>";
+            $reply = "Usage example: <i>" . $wordInfo["usageExample"] . "</i>";
             $telegram->sendMessage([ 'chat_id' => $chatId, 'text' => $reply, 'parse_mode' => "HTML" ]);
         }
     }
