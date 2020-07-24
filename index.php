@@ -136,21 +136,22 @@ function getResponseFromLearning(object $telegram, mysqli $link, int $chatId, st
     $sql = 'SELECT which_words_to_learn FROM users_data WHERE chat_id = ' . $chatId;
     $sqlResult = mysqli_query($link, $sql);
 
-    $whichWordsToLearn = explode(' ', mysqli_fetch_array($sqlResult)["which_words_to_learn"]);
+    $whichWordsToLearn = mysqli_fetch_array($sqlResult)["which_words_to_learn"];
 
-    if (!empty($whichWordsToLearn[1]))
+    if (!empty($whichWordsToLearn))
     {
-        $currentWordNum = array_shift($whichWordsToLearn);
+        $currentWordNum = $whichWordsToLearn[0];
+        $whichWordsToLearn = str_replace($whichWordsToLearn[0], '', $whichWordsToLearn);
 
         if ($callbackQueryData === BAD_MARK)
         {
-            array_push($whichWordsToLearn, $currentWordNum);
+            $whichWordsToLearn .= $currentWordNum;
         }
 
-        $sql = 'UPDATE users_data SET which_words_to_learn = "' . implode(' ', $whichWordsToLearn) . '" WHERE chat_id = ' . $chatId;
+        $sql = 'UPDATE users_data SET which_words_to_learn = "' . $whichWordsToLearn . '" WHERE chat_id = ' . $chatId;
         mysqli_query($link, $sql);
 
-        $nextWordNum = reset($whichWordsToLearn);
+        $nextWordNum = $whichWordsToLearn[0];
 
         $wordInfo = getWordInfoFromDB($link, $chatId, $nextWordNum);
 
@@ -413,7 +414,7 @@ function learnWords(object $telegram, mysqli $link, int $chatId): void
 
         for ($wordNum = 2; $wordNum <= $maxWordNum; $wordNum++)
         {
-            $whichWordsToLearn .= " $wordNum";
+            $whichWordsToLearn .= "$wordNum";
         }
 
         $sql = 'UPDATE users_data SET which_words_to_learn = "' . $whichWordsToLearn . '" WHERE chat_id = ' . $chatId;
