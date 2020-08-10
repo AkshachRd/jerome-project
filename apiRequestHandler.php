@@ -24,19 +24,19 @@ function getWordInfo(string $word): array
         $translation = getTranslation($entries["entry"]);
         $translation[0] = strtoupper($translation[0]);
 
-        return array(
+        return [
             "wordIsCorrect" => true,
             "word" => $originalWord,
             "pronunciations" => $pronunciations,
             "definitionsByPartOfSpeech" => $definitionsByPartOfSpeech,
             "translation" => $translation
-        );
+        ];
     }
     else
     {
-        return array(
+        return [
             "wordIsCorrect" => false
-        );
+        ];
     }
 }
 
@@ -44,7 +44,7 @@ function getAPIAnswer(string $word): string
 {
     $curl = curl_init();
 
-    curl_setopt_array($curl, array(
+    curl_setopt_array($curl, [
         CURLOPT_URL => "https://lingua-robot.p.rapidapi.com/language/v1/entries/en/$word",
         CURLOPT_RETURNTRANSFER => true,
         CURLOPT_FOLLOWLOCATION => true,
@@ -53,11 +53,11 @@ function getAPIAnswer(string $word): string
         CURLOPT_TIMEOUT => 30,
         CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
         CURLOPT_CUSTOMREQUEST => "GET",
-        CURLOPT_HTTPHEADER => array(
+        CURLOPT_HTTPHEADER => [
             "x-rapidapi-host: lingua-robot.p.rapidapi.com",
             "x-rapidapi-key: " . LINGUA_ROBOT_API_KEY
-        )
-    ));
+        ]
+    ]);
 
     $response = curl_exec($curl);
 
@@ -80,7 +80,7 @@ function getTranslation(string $word): ?string
 }
 
 //Функция получает транкрипции и аудио английского и американского произношений слова
-function getPronunciations(array $entries): ?array
+function getPronunciations(array $entries): array
 {
     $pronunciations = $entries["pronunciations"];
 
@@ -106,16 +106,16 @@ function getPronunciations(array $entries): ?array
         }
     }
 
-    return array(
+    return [
         "transcriptionUK" => $transcriptionUK,
         "transcriptionUS" => $transcriptionUS,
         "audioUK" => $audioUK,
         "audioUS" => $audioUS
-    );
+    ];
 }
 
 //Функция получает массив с ключами в виде частей речи. С каждым ключем максимум 3 определения с примерами использавания
-function getDefinitionsByPartOfSpeech(array $entries): ?array
+function getDefinitionsByPartOfSpeech(array $entries): array
 {
     $lexemes = $entries["lexemes"];
     $definitionsByPartOfSpeech = [];
@@ -132,7 +132,7 @@ function getDefinitionsByPartOfSpeech(array $entries): ?array
 }
 
 //Функция возвращает массив с 3 определениями с примерами использования
-function getDefinitions(array $lexeme): ?array
+function getDefinitions(array $lexeme): array
 {
     $senses = $lexeme["senses"];
     $definitions = [];
@@ -142,9 +142,9 @@ function getDefinitions(array $lexeme): ?array
     {
         if ($index !== 3)
         {
-            $definitions[$index] = array(
+            $definitions[$index] = [
                 "definition" => $sense["definition"]
-            );
+            ];
             if (!empty($sense["usageExamples"]))
             {
                 $definitions[$index]["usageExample"] = $sense["usageExamples"][0];

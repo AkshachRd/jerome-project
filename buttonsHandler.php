@@ -59,16 +59,16 @@ function getWordInfoFromDB(mysqli $link, int $chatId, int $wordNum): array
     $sql = 'SELECT word, transcription_uk, transcription_us, translation, definition, usage_example FROM word_list WHERE chat_id = ' . $chatId . ' AND word_num = ' . $wordNum;
     $sqlResult = mysqli_fetch_array(mysqli_query($link, $sql));
 
-    return array(
+    return [
         "word" => $sqlResult["word"],
-        "pronunciations" => array(
+        "pronunciations" => [
             "transcriptionUK" => $sqlResult["transcription_uk"],
             "transcriptionUS" => $sqlResult["transcription_us"]
-        ),
+        ],
         "definition" => $sqlResult["definition"],
         "usageExample" => $sqlResult["usage_example"],
         "translation" => $sqlResult["translation"]
-    );
+    ];
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
                                                /* Inline кнопки */
@@ -188,9 +188,9 @@ function getButtonPartOfSpeechAnswer(object $telegram, int $chatId, array $inlin
 
     $telegram->sendMessage([ 'chat_id' => $chatId, 'text' => $reply, 'parse_mode' => "HTML", 'reply_markup' => $replyMarkup ]);
 
-    $definitionsByPartOfSpeech = array(
+    $definitionsByPartOfSpeech = [
         "$callbackQueryData" => $definitionsByPartOfSpeech[$callbackQueryData]
-    );
+    ];
     $tempWordInfo["definitionsByPartOfSpeech"] = $definitionsByPartOfSpeech;
 
     //Вставляю в файл временный массив
